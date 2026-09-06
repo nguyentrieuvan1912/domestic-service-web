@@ -1,10 +1,16 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import GuestLayout from './components/common/GuestLayout'
+import Home from './pages/Home/Home'
+
 function App() {
   return (
-    <div className="flex h-screen items-center justify-center bg-blue-50">
-      <h1 className="text-4xl font-bold text-blue-600">
-        Khởi tạo Web Thành Công!
-      </h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<GuestLayout />}>
+          <Route path="/" element={<Home />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 
