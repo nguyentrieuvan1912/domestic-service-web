@@ -15,14 +15,14 @@ const navigationItems: NavigationItem[] = [
       { label: 'Dọn dẹp theo ca', to: '/services/one-off' },
       { label: 'Dọn dẹp định kỳ', to: '/services/recurring' },
       { label: 'Tổng vệ sinh', to: '/services/deep-cleaning' },
-      { label: 'Dịch vụ bổ sung', to: '/services' },
+      { label: 'Dịch vụ bổ sung', to: '/services/add-ons' },
     ],
   },
   { label: 'Khuyến mãi', to: '/promotions' },
   {
     label: 'Hợp tác',
     children: [
-      { label: 'Trở thành Staff', to: '/cooperation/staff' },
+      { label: 'Trở thành Staff', to: '/cooperation' },
       { label: 'Tuyển dụng', to: '/cooperation/recruitment' },
       { label: 'Quy trình & quyền lợi', to: '/cooperation' },
     ],

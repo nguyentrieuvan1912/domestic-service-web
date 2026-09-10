@@ -6,6 +6,7 @@ export interface Promotion {
   discountLabel: string
   discountType: 'PERCENTAGE' | 'FIXED_AMOUNT'
   discountValue: number
+  terms: string
   startsAt: string
   endsAt: string
   status: 'ACTIVE' | 'UPCOMING' | 'EXPIRED'
@@ -22,6 +23,7 @@ export const promotions: Promotion[] = [
     discountLabel: 'Giảm 20%',
     discountType: 'PERCENTAGE',
     discountValue: 20,
+    terms: 'Áp dụng cho khách hàng sử dụng dịch vụ lần đầu.',
     startsAt: '2026-01-01T00:00:00+07:00',
     endsAt: '2026-09-30T23:59:59+07:00',
     status: 'ACTIVE',
@@ -35,6 +37,7 @@ export const promotions: Promotion[] = [
     discountLabel: 'Tiết kiệm 15%',
     discountType: 'PERCENTAGE',
     discountValue: 15,
+    terms: 'Áp dụng khi đăng ký gói dọn dẹp định kỳ trên Mobile App.',
     startsAt: '2026-01-01T00:00:00+07:00',
     endsAt: '2026-12-31T23:59:59+07:00',
     status: 'ACTIVE',

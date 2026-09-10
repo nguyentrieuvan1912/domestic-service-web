@@ -57,7 +57,10 @@ function ServiceCard({ service, onBook }: { service: ServicePackage; onBook: () 
             {service.addOns?.map((addOn) => <span key={addOn.id} className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">{addOn.name.replace('Vệ sinh ', '')}</span>)}
           </div>
         </div>
-        <button type="button" onClick={onBook} className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-emerald-600 px-5 py-3.5 font-bold text-white transition hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">Đặt dịch vụ</button>
+        <div className="mt-7 grid grid-cols-2 gap-3">
+          <Link to={`/services/${service.slug}`} className="inline-flex items-center justify-center rounded-full border border-emerald-600 px-4 py-3 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">Xem chi tiết</Link>
+          <button type="button" onClick={onBook} className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">Đặt dịch vụ</button>
+        </div>
       </div>
     </article>
   )
@@ -85,7 +88,7 @@ export default function Services() {
         <section className="mt-14 rounded-3xl border border-dashed border-emerald-300 bg-emerald-50 p-7 sm:p-9">
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
             <div><p className="text-sm font-bold uppercase tracking-[0.16em] text-emerald-700">Dịch vụ bổ sung</p><h2 className="mt-2 text-2xl font-black text-slate-900">Chăm chút kỹ hơn cho từng góc nhỏ</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Sofa, rèm, nệm và thảm có thể được thêm vào gói dịch vụ phù hợp khi bạn đặt trên Mobile App.</p></div>
-            <button type="button" onClick={() => setIsModalOpen(true)} className="shrink-0 rounded-full border border-emerald-600 px-5 py-3 text-sm font-bold text-emerald-700 hover:bg-emerald-600 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">Xem add-on trên app</button>
+            <Link to="/services/add-ons" className="shrink-0 rounded-full border border-emerald-600 px-5 py-3 text-sm font-bold text-emerald-700 hover:bg-emerald-600 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">Xem chi tiết add-on</Link>
           </div>
         </section>
       </main>
