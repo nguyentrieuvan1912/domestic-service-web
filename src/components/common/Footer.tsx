@@ -4,7 +4,7 @@ const serviceLinks = [
   { label: 'Dọn dẹp theo ca', to: '/services/one-off' },
   { label: 'Dọn dẹp định kỳ', to: '/services/recurring' },
   { label: 'Tổng vệ sinh', to: '/services/deep-cleaning' },
-  { label: 'Dịch vụ bổ sung', to: '/services' },
+  { label: 'Dịch vụ bổ sung', to: '/services/add-ons' },
 ]
 
 const supportLinks = [
