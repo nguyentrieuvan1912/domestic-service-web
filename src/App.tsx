@@ -1,5 +1,10 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import GuestLayout from './components/common/GuestLayout'
+import AdminPrivateRoute from './components/admin/AdminPrivateRoute'
+import AdminLayout from './layouts/AdminLayout'
+import AdminDashboard from './pages/Admin/Dashboard'
+import AdminLogin from './pages/Admin/Login'
+import AdminServices from './pages/Admin/Services'
 import About from './pages/About/About'
 import Blog from './pages/Blog/Blog'
 import Cooperation from './pages/Cooperation/Cooperation'
@@ -12,6 +17,10 @@ import AddOnServices from './pages/Services/AddOnServices'
 import Contact from './pages/Support/Contact'
 import FAQ from './pages/Support/FAQ'
 import Terms from './pages/Support/Terms'
+import AdminStaff from './pages/Admin/Staff'
+import AdminCandidates from './pages/Admin/Candidates'
+import AdminBookings from './pages/Admin/Bookings'
+import AdminCustomers from './pages/Admin/Customers'
 
 function App() {
   return (
@@ -32,6 +41,19 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Terms />} />
+        </Route>
+
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route element={<AdminPrivateRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="services" element={<AdminServices />} />
+            <Route path="candidates" element={<AdminCandidates />} />
+            <Route path="staff" element={<AdminStaff />} />
+            <Route path="customers" element={<AdminCustomers />} />
+            <Route path="bookings" element={<AdminBookings />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
