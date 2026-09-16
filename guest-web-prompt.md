@@ -1,31 +1,49 @@
-LẬP TRÌNH TRỰC TIẾP giao diện Website Khách cho đề tài:
+LẬP TRÌNH TRỰC TIẾP giao diện WEBSITE KHÁCH cho đề tài:
+
 “Xây dựng nền tảng quản lý và điều phối dịch vụ giúp việc gia đình thông minh tích hợp trí tuệ nhân tạo”.
 
+Đây là nền tảng ĐA DẠNG DỊCH VỤ GIA ĐÌNH, không chỉ tập trung vào vệ sinh nhà.
 
-Ngôn ngữ : Tiếng Việt 
+Ngôn ngữ : tiếng Việt
 
 CÔNG NGHỆ:
 
 * Next.js + ReactJS
 * TypeScript
 * Tailwind CSS
-* Giao diện đáp ứng cho máy tính, máy tính bảng và điện thoại
+* Thiết kế đáp ứng cho máy tính, máy tính bảng và điện thoại
 * Kiến trúc dựa trên thành phần
-* Chuẩn bị kiến trúc để tích hợp API REST từ Spring Boot sau này
+* Chuẩn bị để tích hợp API REST từ Spring Boot
 * Dữ liệu mẫu tách riêng khỏi giao diện
 
 MỤC TIÊU:
 Chỉ xây dựng WEBSITE KHÁCH ở giai đoạn này.
 Chưa lập trình giao diện quản trị.
-Tuy nhiên phải tổ chức dự án để sau này có thể thêm Website Quản trị trong cùng kho mã nguồn mà không phải thay đổi kiến trúc lớn.
 
-CÁC ĐƯỜNG DẪN WEBSITE KHÁCH:
+Tuy nhiên phải tổ chức kiến trúc để sau này thêm Website Quản trị trong cùng kho mã nguồn mà không phải thay đổi kiến trúc lớn.
+
+WEBSITE KHÁCH phục vụ:
+
+* Khách chưa đăng nhập
+* Khách xem thông tin dịch vụ
+* Khách xem khuyến mãi
+* Khách xem Staff
+* Khách xem thông tin nền tảng
+* Khách tìm hiểu và lựa chọn dịch vụ
+* Khách được hướng dẫn tải ứng dụng để thực hiện Booking
+
+KHÔNG xây dựng quy trình Booking và thanh toán thật trên Website Khách ở giai đoạn này.
+
+---
+
+## CẤU TRÚC ĐƯỜNG DẪN
+
+WEBSITE KHÁCH:
+
 /
 /about
 /services
-/services/one-off
-/services/recurring
-/services/deep-cleaning
+/services/[serviceId]
 /promotions
 /cooperation
 /cooperation/recruitment
@@ -38,7 +56,8 @@ CÁC ĐƯỜNG DẪN WEBSITE KHÁCH:
 /terms
 /privacy
 
-CHUẨN BỊ KIẾN TRÚC CHO WEBSITE QUẢN TRỊ:
+CHỪA SẴN KIẾN TRÚC WEBSITE QUẢN TRỊ:
+
 /admin
 /admin/login
 /admin/dashboard
@@ -51,16 +70,19 @@ CHUẨN BỊ KIẾN TRÚC CHO WEBSITE QUẢN TRỊ:
 /admin/promotions
 /admin/statistics
 
-Không lập trình giao diện quản trị trong nhiệm vụ này.
+Không lập trình giao diện Admin trong nhiệm vụ này.
 
-THANH ĐIỀU HƯỚNG:
-Không đưa toàn bộ đường dẫn lên thanh điều hướng. Thanh điều hướng phải ngắn gọn, chuyên nghiệp.
+---
 
-Trên máy tính:
+## THANH ĐIỀU HƯỚNG
+
+Không đưa toàn bộ chức năng lên thanh điều hướng.
+
+Thiết kế thanh điều hướng gọn:
 
 LOGO + “CleanMaster”
 
-* Nhấn LOGO hoặc tên CleanMaster → quay về trang chủ
+* Nhấn Logo hoặc CleanMaster → Trang chủ
 * Giới thiệu
 * Dịch vụ ▾
 * Khuyến mãi
@@ -72,15 +94,14 @@ LOGO + “CleanMaster”
 
 Dịch vụ ▾:
 
-* Dọn dẹp theo ca
-* Dọn dẹp định kỳ
-* Tổng vệ sinh
-* Dịch vụ bổ sung
-
-  * Sofa
-  * Rèm
-  * Nệm
-  * Thảm
+* Vệ sinh nhà
+* Vệ sinh thiết bị
+* Chăm sóc trẻ em
+* Chăm sóc người cao tuổi
+* Việc nhà
+* Giặt ủi
+* Chăm sóc thú cưng
+* Chăm sóc cây cảnh
 
 Hợp tác ▾:
 
@@ -91,7 +112,7 @@ Hợp tác ▾:
 Blog ▾:
 
 * Blog / Tin tức
-* Mẹo dọn dẹp
+* Mẹo chăm sóc gia đình
 * Kiến thức gia đình
 
 Hỗ trợ ▾:
@@ -100,80 +121,139 @@ Hỗ trợ ▾:
 * Liên hệ
 * Chính sách và điều khoản
 
-Thanh điều hướng cố định khi cuộn trang.
-Menu xổ xuống có hiệu ứng nhẹ, hoạt động hợp lý khi rê chuột và nhấn.
+Thanh điều hướng cố định khi cuộn.
+Menu xổ xuống có hiệu ứng nhẹ.
 Trên điện thoại chuyển thành menu hamburger.
-Các menu con trên điện thoại chuyển thành dạng mở rộng/thu gọn.
+Menu con trên điện thoại sử dụng dạng mở rộng/thu gọn.
 
-TRANG CHỦ:
+---
+
+## PHẠM VI DỊCH VỤ
+
+Nền tảng phải thể hiện đầy đủ các nhóm dịch vụ:
+
+1. VỆ SINH NHÀ
+
+* Vệ sinh nhà
+* Tổng vệ sinh
+
+2. VỆ SINH THIẾT BỊ
+
+* Vệ sinh máy lạnh
+* Bảo dưỡng máy lạnh
+* Vệ sinh máy giặt
+* Vệ sinh máy sấy
+* Vệ sinh tủ lạnh
+
+3. CHĂM SÓC TRẺ EM
+
+* Chăm sóc trẻ em
+
+4. CHĂM SÓC NGƯỜI CAO TUỔI
+
+* Chăm sóc người cao tuổi
+
+5. VIỆC NHÀ
+
+* Nấu ăn gia đình
+* Đi chợ hộ
+
+6. GIẶT ỦI
+
+* Giặt ủi
+
+7. CHĂM SÓC THÚ CƯNG
+
+* Chăm sóc thú cưng
+
+8. CHĂM SÓC CÂY CẢNH
+
+* Chăm sóc cây cảnh
+
+Không dùng một mẫu thông tin giống nhau cho tất cả dịch vụ.
+
+---
+
+## TRANG CHỦ
+
+Trang chủ phải thể hiện nền tảng đa dịch vụ gia đình.
 
 1. PHẦN GIỚI THIỆU CHÍNH:
 
-* Tiêu đề nổi bật về nền tảng giúp việc gia đình thông minh
+* Tiêu đề nổi bật
 * Mô tả ngắn
+* Hình ảnh minh họa
 * Nút “Đặt dịch vụ”
 * Nút “Tải ứng dụng”
-* Hình ảnh minh họa dịch vụ gia đình
 
-2. GIỚI THIỆU NỀN TẢNG:
+2. THANH TÌM KIẾM DỊCH VỤ:
+   Cho phép tìm kiếm dịch vụ theo tên.
+   Ví dụ:
+   “Vệ sinh máy lạnh”
+   “Chăm sóc trẻ em”
+   “Giặt ủi”
 
-* Kết nối Khách hàng với Staff đã được tuyển chọn
-* Đặt dịch vụ thông qua ứng dụng di động
-* Hệ thống hỗ trợ điều phối Staff
-* AI hỗ trợ tư vấn và lựa chọn dịch vụ
+3. DANH MỤC DỊCH VỤ:
+   Hiển thị các danh mục:
 
-3. DỊCH VỤ NỔI BẬT:
+* Vệ sinh nhà
+* Vệ sinh thiết bị
+* Chăm sóc trẻ em
+* Chăm sóc người cao tuổi
+* Việc nhà
+* Giặt ủi
+* Chăm sóc thú cưng
+* Chăm sóc cây cảnh
 
-* Dọn dẹp theo ca
-* Dọn dẹp định kỳ
-* Tổng vệ sinh
-* Dịch vụ bổ sung: sofa, rèm, nệm, thảm
+Mỗi danh mục có biểu tượng, hình ảnh và mô tả ngắn.
 
-4. QUY TRÌNH SỬ DỤNG:
-   Chọn dịch vụ → Chọn thời gian/khu vực → Chọn Staff hoặc để hệ thống tìm Staff → Xác nhận/thanh toán → Thực hiện dịch vụ → Đánh giá
+4. BANNER DỊCH VỤ NỔI BẬT:
+   Hiển thị các dịch vụ hoặc chương trình nổi bật.
 
-5. LÝ DO LỰA CHỌN NỀN TẢNG:
+5. DỊCH VỤ PHỔ BIẾN:
+   Hiển thị các dịch vụ có lượt sử dụng/quan tâm cao bằng dữ liệu mẫu.
 
-* Staff được tuyển chọn
-* Giá minh bạch
-* Đặt lịch linh hoạt
+6. DỊCH VỤ ĐỀ XUẤT:
+   Hiển thị một số dịch vụ đề xuất dựa trên dữ liệu mẫu.
+
+7. KHUYẾN MÃI:
+   Hiển thị các chương trình khuyến mãi nổi bật.
+
+8. GIỚI THIỆU NỀN TẢNG:
+
+* Nền tảng kết nối Customer với Staff
+* Staff được tuyển chọn và quản lý
 * Hệ thống hỗ trợ điều phối
-* Đánh giá Staff
-* AI hỗ trợ tư vấn
+* AI hỗ trợ tư vấn dịch vụ
 
-6. KHUYẾN MÃI NỔI BẬT:
-   Hiển thị một số chương trình khuyến mãi bằng thẻ thông tin.
+9. QUY TRÌNH:
+   Chọn dịch vụ → Chọn Package → Chọn Add-on → Nhập thông tin dịch vụ → Chọn địa chỉ → Chọn thời gian → Chọn phương thức điều phối → Xác nhận Booking.
 
-7. TẢI ỨNG DỤNG:
+10. TẢI ỨNG DỤNG:
 
-* Giới thiệu ứng dụng di động
+* Giới thiệu Mobile App
 * Mã QR mẫu
-* Nút App Store mẫu
-* Nút Google Play mẫu
-* Nút “Tải ứng dụng”
+* App Store mẫu
+* Google Play mẫu
 
-8. TRỞ THÀNH STAFF:
+11. TRỞ THÀNH STAFF:
 
-* Cơ hội hợp tác
 * Quyền lợi
+* Điều kiện
 * Quy trình tuyển chọn
-* Nút “Đăng ký trở thành Staff”
+* Nút đăng ký
 
-9. BLOG / TIN TỨC:
+12. BLOG / TIN TỨC
 
-* Một số bài viết nổi bật
-* Hình ảnh
-* Tiêu đề
-* Ngày đăng
-* Nút xem thêm
+13. FAQ
 
-10. CÂU HỎI THƯỜNG GẶP:
-    Sử dụng dạng mở rộng/thu gọn.
+14. NÚT AI ASSISTANT:
+    Có nút nổi hoặc khu vực mở AI Assistant.
+    AI hỗ trợ tư vấn lựa chọn dịch vụ.
 
-11. PHẦN KÊU GỌI HÀNH ĐỘNG CUỐI TRANG:
-    “Cần giúp việc? Đặt dịch vụ ngay.”
+AI không tự tạo Booking hoặc thanh toán.
 
-12. CHÂN TRANG:
+15. CHÂN TRANG:
 
 * Giới thiệu
 * Dịch vụ
@@ -181,102 +261,318 @@ TRANG CHỦ:
 * Hỗ trợ
 * Liên hệ
 * Chính sách
-* Mạng xã hội mẫu
+* Mạng xã hội
 * Bản quyền
 
-TRANG DỊCH VỤ:
+---
 
-Chỉ hiển thị các dịch vụ thuộc phạm vi đề tài:
+## TRANG DỊCH VỤ
 
-* Dọn dẹp theo ca
-* Dọn dẹp định kỳ
-* Tổng vệ sinh
-* Dịch vụ bổ sung: sofa, rèm, nệm, thảm
+Trang dịch vụ phải hỗ trợ nhiều loại dịch vụ khác nhau.
 
-Mỗi dịch vụ hiển thị:
+Hiển thị:
 
+* Danh mục
+* Tên dịch vụ
 * Hình ảnh
 * Mô tả
-* Đối tượng phù hợp
+* Package
+* Giá mẫu
 * Thời lượng
-* Phạm vi diện tích
-* Dịch vụ bổ sung có thể lựa chọn
-* Nút “Đặt dịch vụ”
+* Add-on
+* Đánh giá
+* Nút xem chi tiết
 
-Nút “Đặt dịch vụ” dẫn người dùng đến ứng dụng di động hoặc trang tải ứng dụng.
-Không xây dựng quy trình đặt dịch vụ thật trên Website Khách.
+Có bộ lọc theo danh mục.
 
-TRANG KHUYẾN MÃI:
+---
 
-* Danh sách chương trình khuyến mãi
-* Mức giảm
-* Thời gian áp dụng
-* Trạng thái
-* Chi tiết chương trình
+## TRANG CHI TIẾT DỊCH VỤ
 
-TRANG HỢP TÁC / STAFF:
+KHÔNG sử dụng một biểu mẫu chung cho tất cả dịch vụ.
 
-* Giới thiệu cơ hội trở thành Staff
+Thông tin và trường nhập phải thay đổi theo loại dịch vụ.
+
+Ví dụ:
+
+VỆ SINH MÁY LẠNH:
+
+* Loại máy lạnh
+* Số lượng máy
+* Vị trí lắp đặt
+* Có cần bảo dưỡng không
+
+CHĂM SÓC TRẺ EM:
+
+* Độ tuổi của trẻ
+* Thời gian chăm sóc
+* Yêu cầu đặc biệt
+* Người liên hệ khẩn cấp
+
+CHĂM SÓC NGƯỜI CAO TUỔI:
+
+* Độ tuổi
+* Mức độ hỗ trợ
+* Thời gian chăm sóc
+* Yêu cầu đặc biệt
+* Người liên hệ khẩn cấp
+
+GIẶT ỦI:
+
+* Số lượng/quy mô
+* Loại quần áo
+* Yêu cầu đặc biệt
+
+CHĂM SÓC THÚ CƯNG:
+
+* Loại thú cưng
+* Số lượng
+* Thời gian chăm sóc
+* Yêu cầu đặc biệt
+
+CHĂM SÓC CÂY CẢNH:
+
+* Số lượng cây
+* Loại cây
+* Tình trạng
+* Yêu cầu chăm sóc
+
+NẤU ĂN:
+
+* Số người
+* Loại bữa ăn
+* Thời gian
+* Yêu cầu về món ăn
+
+Mỗi dịch vụ có thể có các trường dữ liệu riêng.
+
+---
+
+## LUỒNG BOOKING
+
+Website chỉ mô phỏng/giới thiệu luồng, không thực hiện Booking thật.
+
+Luồng nghiệp vụ:
+
+1. Chọn nhóm dịch vụ
+2. Chọn dịch vụ
+3. Chọn Package
+4. Chọn Add-on
+5. Nhập thông tin riêng của dịch vụ
+6. Chọn địa chỉ
+7. Chọn ngày và giờ
+8. Chọn phương thức điều phối
+9. Chọn số lượng Staff
+10. Áp dụng khuyến mãi
+11. Xem tóm tắt Booking
+12. Chọn phương thức thanh toán
+13. Xác nhận Booking
+14. Hiển thị kết quả
+
+Có hai phương thức điều phối:
+
+PHƯƠNG THỨC A — KHÁCH CHỌN STAFF:
+Cho phép xem:
+
+* Ảnh đại diện
+* Tên
+* Đánh giá
+* Kinh nghiệm
+* Khu vực hoạt động
+* Các dịch vụ Staff có thể thực hiện
+* Trạng thái hoạt động
+
+PHƯƠNG THỨC B — HỆ THỐNG TỰ ĐỘNG ĐIỀU PHỐI:
+Khách không cần chọn Staff.
+Hệ thống tìm Staff dựa trên:
+
+* Dịch vụ
+* Khu vực
+* Thời gian
+* Năng lực
+* Trạng thái hoạt động
+* Số lượng Staff cần thiết
+
+Trạng thái giao diện cần hỗ trợ:
+
+* Đang tìm Staff
+* Đã tìm thấy Staff
+* Không tìm thấy Staff
+* Staff từ chối
+* Đang tìm Staff thay thế
+* Booking đã được nhận
+
+Không gán tất cả dịch vụ cho tất cả Staff.
+
+Staff phải có danh sách kỹ năng/dịch vụ riêng.
+
+---
+
+## AI ASSISTANT
+
+AI có thể:
+
+* Phân tích nhu cầu bằng ngôn ngữ tự nhiên
+* Đề xuất dịch vụ
+* Đề xuất Package
+* Đề xuất Add-on
+* Đề xuất thời gian
+* Hỗ trợ nhập thông tin Booking
+* Trả lời câu hỏi thường gặp
+* Giải thích giá
+* Giải thích thời lượng
+
+Ví dụ người dùng nhập:
+
+“Tôi muốn vệ sinh 3 máy lạnh vào chiều thứ bảy.”
+
+AI phải có khả năng phân tích thành:
+
+* Dịch vụ: Vệ sinh máy lạnh
+* Số lượng: 3 máy
+* Thời gian: Chiều thứ bảy
+* Package phù hợp
+* Add-on nếu có
+
+AI chỉ hỗ trợ tư vấn.
+
+AI KHÔNG được tự ý:
+
+* Tạo Booking
+* Xác nhận Booking
+* Thanh toán
+* Hoàn tiền
+* Thay đổi giá
+* Phân phối tiền
+* Đình chỉ Staff
+
+Trước khi thực hiện Booking, Customer phải:
+
+1. Xem tóm tắt
+2. Chọn phương thức thanh toán
+3. Chủ động xác nhận
+4. Nhận kết quả
+
+---
+
+## DỮ LIỆU MẪU
+
+Tạo dữ liệu mẫu đa dạng:
+
+* Service
+* Category
+* ServicePackage
+* AddOn
+* Staff
+* Customer
+* Booking
+* Promotion
+* Notification
+* Conversation
+* Review
+
+Staff phải có năng lực khác nhau.
+
+Ví dụ:
+
+* Staff chỉ vệ sinh nhà
+* Staff chuyên vệ sinh máy lạnh
+* Staff chuyên vệ sinh máy giặt
+* Staff chuyên chăm sóc trẻ em
+* Staff chuyên chăm sóc người cao tuổi
+* Staff chuyên giặt ủi
+* Staff chuyên chăm sóc thú cưng
+* Staff chuyên chăm sóc cây cảnh
+
+Một Staff có thể có nhiều kỹ năng nhưng không được mặc định có tất cả kỹ năng.
+
+Staff phải có:
+
+* Thông tin cơ bản
+* Ảnh đại diện
+* Kinh nghiệm
+* Đánh giá
+* Khu vực hoạt động
+* Danh sách dịch vụ có thể thực hiện
+* Trạng thái hoạt động
+
+---
+
+## HỢP TÁC / STAFF
+
+Hiển thị:
+
+* Cơ hội trở thành Staff
 * Điều kiện
 * Quyền lợi
 * Quy trình tuyển chọn
-* Biểu mẫu đăng ký cơ bản
+* Các nhóm dịch vụ có thể cung cấp
+* Biểu mẫu đăng ký
 
-LƯU Ý:
-Staff KHÔNG tự tạo tài khoản trên ứng dụng di động.
-Website chỉ tiếp nhận thông tin tuyển dụng.
-Sau khi được công ty tuyển chọn, tài khoản Staff được quản trị viên tạo.
+Staff KHÔNG tự tạo tài khoản ứng dụng.
 
-TRANG GIỚI THIỆU:
+Website chỉ tiếp nhận thông tin đăng ký.
+Sau khi được công ty tuyển chọn, tài khoản Staff được tạo bởi quản trị viên.
 
-* Giới thiệu nền tảng
+---
+
+## TRANG KHUYẾN MÃI
+
+Hiển thị:
+
+* Danh sách khuyến mãi
+* Tên chương trình
+* Mức giảm
+* Thời gian áp dụng
+* Điều kiện
+* Trạng thái
+* Chi tiết
+
+---
+
+## TRANG GIỚI THIỆU
+
+Hiển thị:
+
+* Về nền tảng
 * Mục tiêu
 * Giá trị
-* Cách hệ thống hoạt động
-* Vai trò của Khách hàng / Staff / Quản trị viên
-* Vai trò của AI
+* Các nhóm dịch vụ
+* Cách nền tảng hoạt động
+* Customer
+* Staff
+* Admin
+* AI
+* Hệ thống điều phối
 
-AI chỉ hỗ trợ tư vấn.
-AI không được tự quyết định:
+---
 
-* Giá
-* Thanh toán
-* Hoàn tiền
-* Xác nhận đơn
-* Đình chỉ Staff
-* Phân phối tiền
-
-TRANG BLOG:
+## TRANG BLOG
 
 * Danh sách bài viết
 * Danh mục
-* Tìm kiếm/lọc
+* Tìm kiếm
+* Lọc
+* Bài viết nổi bật
 * Trang chi tiết bài viết
-* Sử dụng dữ liệu mẫu
+* Dữ liệu mẫu
 
-TRANG HỖ TRỢ:
+---
 
-* Câu hỏi thường gặp dạng mở rộng/thu gọn
+## TRANG HỖ TRỢ
+
+* FAQ
+* Liên hệ
 * Biểu mẫu liên hệ
-* Số điện thoại mẫu
+* Hotline mẫu
 * Email mẫu
 * Địa chỉ mẫu
-* Chính sách và điều khoản
+* Chính sách
+* Điều khoản
 
-PHẠM VI KHÔNG ĐƯỢC THÊM:
+---
 
-* Pay
-* Rewards
-* Ví tiền Khách hàng
-* Theo dõi GPS thời gian thực
-* Dịch vụ chuyển nhà
-* Vệ sinh máy lạnh hoặc thiết bị chuyên dụng
-* Giặt ủi
-* Nấu ăn
-* Chăm sóc trẻ em/người cao tuổi
-* Các dịch vụ khác không thuộc nghiệp vụ đề tài
-
-KIẾN TRÚC DỰ ÁN:
+## KIẾN TRÚC DỰ ÁN
 
 src/
 ├── app/
@@ -294,63 +590,110 @@ src/
 ├── assets/
 └── styles/
 
-Website Khách và Website Quản trị phải có bố cục và thanh điều hướng riêng.
-Các thành phần dùng chung có thể đặt trong common.
+Website Khách và Website Quản trị phải có Layout và Navigation riêng.
+
+Các thành phần dùng chung đặt trong common.
+
 Không đưa logic quản trị vào Website Khách.
 
-TẠO KIỂU DỮ LIỆU VÀ DỮ LIỆU MẪU:
+---
 
+## KIỂU DỮ LIỆU
+
+Tạo TypeScript types cho:
+
+* Category
 * Service
 * ServicePackage
 * AddOn
+* ServiceRequirement
+* Staff
+* StaffSkill
+* Customer
+* Booking
 * Promotion
-* BlogPost
-* FAQ
-* RecruitmentInfo
+* Notification
+* Conversation
+* Review
 
-Thiết kế kiểu dữ liệu để sau này có thể dễ dàng ánh xạ với API Spring Boot.
+Thiết kế kiểu dữ liệu để sau này dễ ánh xạ với API Spring Boot.
 
-YÊU CẦU GIAO DIỆN:
+Đặc biệt ServiceRequirement phải hỗ trợ thông tin khác nhau tùy loại dịch vụ.
 
-* Hiện đại
-* Chuyên nghiệp
-* Đáng tin cậy
-* Thân thiện với gia đình
-* Phù hợp nền tảng cung cấp dịch vụ giúp việc
-* Có thể tham khảo cách tổ chức nội dung và trải nghiệm người dùng của bTaskee nhưng KHÔNG sao chép giao diện, nội dung, hình ảnh hoặc thương hiệu.
-* Đáp ứng tốt trên mọi kích thước màn hình
-* Chữ rõ ràng, dễ đọc
+---
+
+## YÊU CẦU GIAO DIỆN
+
+Thiết kế hiện đại, chuyên nghiệp, đáng tin cậy và thân thiện với gia đình.
+
+Có thể tham khảo cách tổ chức nội dung và trải nghiệm người dùng của bTaskee nhưng:
+
+* Không sao chép giao diện
+* Không sao chép nội dung
+* Không sao chép hình ảnh
+* Không sao chép thương hiệu
+
+Ưu tiên thiết kế nhận diện riêng cho CleanMaster.
+
+Yêu cầu:
+
+* Responsive
+* Typography rõ ràng
 * Khoảng trắng hợp lý
-* Thẻ thông tin và các khu vực giao diện nhất quán
-* Nút hành động nổi bật
-* Hiệu ứng chuyển động nhẹ, không lạm dụng
-* Hỗ trợ khả năng tiếp cận cơ bản
-* Có trạng thái đang tải, không có dữ liệu và lỗi đối với các thành phần sử dụng dữ liệu
+* Hệ thống màu sắc nhất quán
+* Card nhất quán
+* Nút hành động rõ ràng
+* Animation nhẹ
+* Accessibility cơ bản
+* Loading state
+* Empty state
+* Error state
+* Hover/focus state
 
-QUY ĐỊNH QUAN TRỌNG:
+---
 
-Đây là WEBSITE KHÁCH, không phải Website Quản trị.
+## QUY ĐỊNH QUAN TRỌNG
 
-Không:
+Đây là WEBSITE KHÁCH.
 
-* Tạo đăng nhập cho Khách trên Website
-* Tạo quy trình đặt dịch vụ thật
-* Tạo thanh toán thật
-* Gọi API thật
-* Viết logic nghiệp vụ phía máy chủ
-* Lập trình giao diện quản trị
-* Mở rộng phạm vi ngoài nghiệp vụ đã mô tả
-* Thêm các dịch vụ không tồn tại trong đề tài
+Không lập trình Admin UI ở nhiệm vụ này.
 
-Nút “Đặt dịch vụ” chỉ dẫn người dùng đến ứng dụng di động hoặc trang tải ứng dụng.
+Không tạo đăng nhập Customer trên Website Khách.
 
-KẾT QUẢ SAU KHI HOÀN THÀNH:
+Không tạo Booking thật.
+
+Không tạo thanh toán thật.
+
+Không gọi API thật.
+
+Không viết logic nghiệp vụ phía máy chủ.
+
+Không hard-code logic backend.
+
+Không giới hạn nền tảng chỉ ở dịch vụ vệ sinh nhà.
+
+Phải thể hiện đầy đủ nền tảng đa dạng dịch vụ gia đình.
+
+Không dùng một biểu mẫu giống nhau cho tất cả dịch vụ.
+
+Không gán tất cả dịch vụ cho tất cả Staff.
+
+Không cho AI tự ý tạo Booking hoặc thanh toán.
+
+---
+
+## SAU KHI HOÀN THÀNH
 
 1. Kiểm tra toàn bộ đường dẫn Website Khách.
-2. Kiểm tra thanh điều hướng và tất cả menu xổ xuống.
-3. Kiểm tra giao diện trên máy tính, máy tính bảng và điện thoại.
-4. Kiểm tra toàn bộ mã TypeScript.
-5. Chạy lệnh xây dựng dự án và sửa toàn bộ lỗi.
-6. Tạo README mô tả cấu trúc dự án.
-7. Giữ nguyên kiến trúc `/admin` để bước tiếp theo có thể xây dựng Website Quản trị độc lập với Website Khách.
-8. Không tự chuyển sang lập trình Website Quản trị khi chưa được yêu cầu.
+2. Kiểm tra thanh điều hướng và các menu xổ xuống.
+3. Kiểm tra tất cả nhóm dịch vụ.
+4. Kiểm tra giao diện chi tiết của nhiều loại dịch vụ.
+5. Kiểm tra khả năng hiển thị khác nhau của biểu mẫu theo từng dịch vụ.
+6. Kiểm tra dữ liệu Staff và kỹ năng Staff.
+7. Kiểm tra giao diện AI Assistant.
+8. Kiểm tra responsive trên máy tính, máy tính bảng và điện thoại.
+9. Kiểm tra toàn bộ mã TypeScript.
+10. Chạy lệnh xây dựng dự án và sửa toàn bộ lỗi.
+11. Tạo README mô tả cấu trúc.
+12. Giữ nguyên kiến trúc `/admin`.
+13. Không tự chuyển sang lập trình Admin khi chưa được yêu cầu.
