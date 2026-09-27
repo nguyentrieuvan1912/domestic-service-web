@@ -70,6 +70,14 @@ export default function StaffModal({
   const [violationReason, setViolationReason] = useState('Hủy lịch phút chót')
   const [violationPenalty, setViolationPenalty] = useState('')
 
+  // Form states for reward section
+  const [selectedBonuses, setSelectedBonuses] = useState<{ [key: string]: boolean }>({
+    tripsBonus: (draft.totalTrips || 0) >= 150,
+    incomeBonus: (draft.income || 0) >= 20000000,
+    ratingBonus: (draft.averageRating || 0) >= 4.9,
+  })
+  const [rewardSavedMessage, setRewardSavedMessage] = useState<string | null>(null)
+
   const toggleSkill = (serviceId: string) => {
     setDraft((prev) => ({
       ...prev,
@@ -376,7 +384,7 @@ export default function StaffModal({
 
             {/* TAB 3: Thống kê */}
             {activeTab === 'statistics' && (
-              <section className="space-y-4">
+              <section className="space-y-6">
                 <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
                   Chỉ số hiệu suất & Thu nhập
                 </h3>
@@ -420,6 +428,126 @@ export default function StaffModal({
                     <p className="mt-1 text-xs text-slate-500">
                       Hủy: {draft.cancelledBookings} chuyến
                     </p>
+                  </div>
+                </div>
+
+                {/* KHỐI CÂU HỎI THƯỞNG KPI */}
+                <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-5 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🎁</span>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 tracking-tight">
+                          Chính sách & Ghi nhận Thưởng
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          Xét duyệt mốc KPI đạt thưởng cho nhân viên trong kỳ đánh giá
+                        </p>
+                      </div>
+                    </div>
+                    {rewardSavedMessage && (
+                      <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                        {rewardSavedMessage}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-2.5 text-xs">
+                    <label className="flex cursor-pointer items-center justify-between rounded-lg border border-amber-200/80 bg-white p-3 font-medium transition hover:border-amber-300">
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={selectedBonuses.tripsBonus || false}
+                          onChange={(e) =>
+                            setSelectedBonuses({
+                              ...selectedBonuses,
+                              tripsBonus: e.target.checked,
+                            })
+                          }
+                          className="h-4 w-4 rounded accent-amber-500 focus:ring-amber-400"
+                        />
+                        <span className="text-slate-800">
+                          Thưởng đạt mốc &gt; 150 chuyến/tháng (500,000đ)
+                        </span>
+                      </div>
+                      <span className="font-bold text-amber-700">+500.000đ</span>
+                    </label>
+
+                    <label className="flex cursor-pointer items-center justify-between rounded-lg border border-amber-200/80 bg-white p-3 font-medium transition hover:border-amber-300">
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={selectedBonuses.incomeBonus || false}
+                          onChange={(e) =>
+                            setSelectedBonuses({
+                              ...selectedBonuses,
+                              incomeBonus: e.target.checked,
+                            })
+                          }
+                          className="h-4 w-4 rounded accent-amber-500 focus:ring-amber-400"
+                        />
+                        <span className="text-slate-800">
+                          Thưởng đạt mốc thu nhập &gt; 20 triệu (1,000,000đ)
+                        </span>
+                      </div>
+                      <span className="font-bold text-amber-700">+1.000.000đ</span>
+                    </label>
+
+                    <label className="flex cursor-pointer items-center justify-between rounded-lg border border-amber-200/80 bg-white p-3 font-medium transition hover:border-amber-300">
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={selectedBonuses.ratingBonus || false}
+                          onChange={(e) =>
+                            setSelectedBonuses({
+                              ...selectedBonuses,
+                              ratingBonus: e.target.checked,
+                            })
+                          }
+                          className="h-4 w-4 rounded accent-amber-500 focus:ring-amber-400"
+                        />
+                        <span className="text-slate-800">
+                          Thưởng đánh giá 5 sao liên tục (300,000đ)
+                        </span>
+                      </div>
+                      <span className="font-bold text-amber-700">+300.000đ</span>
+                    </label>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-amber-200/60">
+                    <div className="text-xs">
+                      <span className="text-slate-500">Tổng tiền thưởng xét duyệt: </span>
+                      <span className="font-extrabold text-amber-800 text-sm">
+                        {new Intl.NumberFormat('vi-VN').format(
+                          (selectedBonuses.tripsBonus ? 500000 : 0) +
+                            (selectedBonuses.incomeBonus ? 1000000 : 0) +
+                            (selectedBonuses.ratingBonus ? 300000 : 0)
+                        )}
+                        đ
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const totalBonus =
+                          (selectedBonuses.tripsBonus ? 500000 : 0) +
+                          (selectedBonuses.incomeBonus ? 1000000 : 0) +
+                          (selectedBonuses.ratingBonus ? 300000 : 0)
+
+                        setRewardSavedMessage(
+                          totalBonus > 0
+                            ? `✨ Đã ghi nhận thưởng ${new Intl.NumberFormat(
+                                'vi-VN'
+                              ).format(totalBonus)}đ!`
+                            : 'Đã cập nhật trạng thái thưởng'
+                        )
+                        setTimeout(() => setRewardSavedMessage(null), 3500)
+                      }}
+                      className="rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-600 active:scale-95 text-center"
+                    >
+                      Ghi nhận thưởng
+                    </button>
                   </div>
                 </div>
               </section>

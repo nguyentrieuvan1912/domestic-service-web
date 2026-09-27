@@ -41,6 +41,7 @@ const navigationItems: NavigationItem[] = [
       { label: 'FAQ', to: '/faq' },
       { label: 'Liên hệ', to: '/contact' },
       { label: 'Chính sách & điều khoản', to: '/terms' },
+      { label: 'Hướng dẫn nhân viên sử dụng app', to: '/employee-guideline' },
     ],
   },
 ]

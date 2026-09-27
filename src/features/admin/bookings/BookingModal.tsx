@@ -136,9 +136,9 @@ export default function BookingModal({
             )}
           </div>
 
-          {/* CARD 2: Tình trạng Điều phối */}
+          {/* CARD 2: Trạng thái Điều phối */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-2">
               ⚙️ Trạng thái Điều phối Nhân viên
             </h3>
 

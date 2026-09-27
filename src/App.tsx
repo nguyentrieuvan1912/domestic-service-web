@@ -21,6 +21,10 @@ import AdminStaff from './pages/Admin/Staff'
 import AdminCandidates from './pages/Admin/Candidates'
 import AdminBookings from './pages/Admin/Bookings'
 import AdminCustomers from './pages/Admin/Customers'
+import AdminPromotions from './pages/Admin/Promotions'
+import AdminTransactions from './pages/Admin/Transactions'
+import AdminReviews from './pages/Admin/Reviews'
+import AdminAnalytics from './pages/Admin/Analytics'
 
 function App() {
   return (
@@ -53,6 +57,10 @@ function App() {
             <Route path="staff" element={<AdminStaff />} />
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="bookings" element={<AdminBookings />} />
+            <Route path="promotions" element={<AdminPromotions />} />
+            <Route path="transactions" element={<AdminTransactions />} />
+            <Route path="reviews" element={<AdminReviews />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
           </Route>
         </Route>
       </Routes>
