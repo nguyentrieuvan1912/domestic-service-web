@@ -28,14 +28,37 @@ export default function AdminServices() {
   const [catalogMode, setCatalogMode] = useState<CatalogMode | null>(null)
   const [editingCatalogItem, setEditingCatalogItem] = useState<CatalogItem | null>(null)
 
-  const packageCounts = Object.fromEntries(packages.map((item) => [item.serviceId, packages.filter((entry) => entry.serviceId === item.serviceId).length]))
-  const addOnCounts = Object.fromEntries(addOns.map((item) => [item.serviceId, addOns.filter((entry) => entry.serviceId === item.serviceId).length]))
+  const packageCounts = Object.fromEntries(
+    packages.map((item) => [item.serviceId, packages.filter((entry) => entry.serviceId === item.serviceId).length])
+  )
+  const addOnCounts = Object.fromEntries(
+    addOns.map((item) => [item.serviceId, addOns.filter((entry) => entry.serviceId === item.serviceId).length])
+  )
 
-  const openCatalogModal = (mode: CatalogMode, item: CatalogItem | null = null) => { setCatalogMode(mode); setEditingCatalogItem(item) }
+  const openCatalogModal = (mode: CatalogMode, item: CatalogItem | null = null) => {
+    setCatalogMode(mode)
+    setEditingCatalogItem(item)
+  }
+
   const saveCatalogItem = (item: CatalogItem) => {
-    if (catalogMode === 'category') setCategories((current) => current.some((entry) => entry.id === item.id) ? current.map((entry) => entry.id === item.id ? item as Category : entry) : [...current, item as Category])
-    if (catalogMode === 'package') setPackages((current) => current.some((entry) => entry.id === item.id) ? current.map((entry) => entry.id === item.id ? item as ServicePackage : entry) : [...current, item as ServicePackage])
-    if (catalogMode === 'addon') setAddOns((current) => current.some((entry) => entry.id === item.id) ? current.map((entry) => entry.id === item.id ? item as AddOn : entry) : [...current, item as AddOn])
+    if (catalogMode === 'category')
+      setCategories((current) =>
+        current.some((entry) => entry.id === item.id)
+          ? current.map((entry) => (entry.id === item.id ? (item as Category) : entry))
+          : [...current, item as Category]
+      )
+    if (catalogMode === 'package')
+      setPackages((current) =>
+        current.some((entry) => entry.id === item.id)
+          ? current.map((entry) => (entry.id === item.id ? (item as ServicePackage) : entry))
+          : [...current, item as ServicePackage]
+      )
+    if (catalogMode === 'addon')
+      setAddOns((current) =>
+        current.some((entry) => entry.id === item.id)
+          ? current.map((entry) => (entry.id === item.id ? (item as AddOn) : entry))
+          : [...current, item as AddOn]
+      )
     setCatalogMode(null)
     setEditingCatalogItem(null)
   }

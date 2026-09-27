@@ -8,6 +8,10 @@ const menuItems = [
   { label: 'Nhân viên', path: '/admin/staff' },
   { label: 'Khách hàng', path: '/admin/customers' },
   { label: 'Đơn đặt dịch vụ', path: '/admin/bookings' },
+  { label: 'Khuyến mãi', path: '/admin/promotions' },
+  { label: 'Tài chính & Giao dịch', path: '/admin/transactions' },
+  { label: 'Đánh giá & Hỗ trợ', path: '/admin/reviews' },
+  { label: 'Thống kê & Báo cáo', path: '/admin/analytics' },
 ]
 
 export default function AdminLayout() {
@@ -48,17 +52,17 @@ export default function AdminLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex min-h-20 items-center justify-between border-b border-slate-200 bg-white px-6 py-4 shadow-sm lg:px-10">
+        <header className="flex min-h-16 items-center justify-between border-b border-slate-200 bg-white px-6 py-3.5 shadow-sm lg:px-8">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Cổng quản trị</p>
-            <p className="mt-1 text-sm text-slate-500">Quản trị nền tảng dịch vụ gia đình</p>
+            <p className="mt-0.5 text-xs font-medium text-slate-500">Quản trị nền tảng dịch vụ gia đình CleanMaster</p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">AD</div>
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white shadow-sm leading-none">AD</div>
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
             >
               Đăng xuất
             </button>
