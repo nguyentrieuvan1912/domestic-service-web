@@ -11,12 +11,13 @@ CÔNG NGHỆ:
 * Next.js + ReactJS
 * TypeScript
 * Tailwind CSS
-* Thiết kế đáp ứng cho máy tính, máy tính bảng và điện thoại
-* Kiến trúc dựa trên thành phần
-* Chuẩn bị để tích hợp API REST từ Spring Boot
+* Responsive cho desktop, tablet, mobile
+* Component-based architecture
+* Chuẩn bị tích hợp REST API từ Spring Boot
 * Dữ liệu mẫu tách riêng khỏi giao diện
 
 MỤC TIÊU:
+
 Chỉ xây dựng WEBSITE KHÁCH ở giai đoạn này.
 Chưa lập trình giao diện quản trị.
 
@@ -25,12 +26,12 @@ Tuy nhiên phải tổ chức kiến trúc để sau này thêm Website Quản t
 WEBSITE KHÁCH phục vụ:
 
 * Khách chưa đăng nhập
-* Khách xem thông tin dịch vụ
-* Khách xem khuyến mãi
-* Khách xem Staff
-* Khách xem thông tin nền tảng
-* Khách tìm hiểu và lựa chọn dịch vụ
-* Khách được hướng dẫn tải ứng dụng để thực hiện Booking
+* Xem thông tin dịch vụ
+* Xem khuyến mãi
+* Xem Staff
+* Xem thông tin nền tảng
+* Tìm hiểu và lựa chọn dịch vụ
+* Được hướng dẫn tải ứng dụng để thực hiện Booking
 
 KHÔNG xây dựng quy trình Booking và thanh toán thật trên Website Khách ở giai đoạn này.
 
@@ -70,7 +71,9 @@ CHỪA SẴN KIẾN TRÚC WEBSITE QUẢN TRỊ:
 /admin/promotions
 /admin/statistics
 
-Không lập trình giao diện Admin trong nhiệm vụ này.
+Không lập trình giao diện Admin trong nhiệm vụ hiện tại.
+
+Tuy nhiên kiến trúc Admin phải được chuẩn bị sẵn để sau này mở rộng, đặc biệt là module quản lý tuyển dụng Staff.
 
 ---
 
@@ -78,7 +81,7 @@ Không lập trình giao diện Admin trong nhiệm vụ này.
 
 Không đưa toàn bộ chức năng lên thanh điều hướng.
 
-Thiết kế thanh điều hướng gọn:
+Thiết kế:
 
 LOGO + “CleanMaster”
 
@@ -123,14 +126,14 @@ Hỗ trợ ▾:
 
 Thanh điều hướng cố định khi cuộn.
 Menu xổ xuống có hiệu ứng nhẹ.
-Trên điện thoại chuyển thành menu hamburger.
+Trên điện thoại chuyển thành hamburger.
 Menu con trên điện thoại sử dụng dạng mở rộng/thu gọn.
 
 ---
 
 ## PHẠM VI DỊCH VỤ
 
-Nền tảng phải thể hiện đầy đủ các nhóm dịch vụ:
+Nền tảng phải thể hiện đầy đủ:
 
 1. VỆ SINH NHÀ
 
@@ -187,14 +190,16 @@ Trang chủ phải thể hiện nền tảng đa dịch vụ gia đình.
 * Nút “Tải ứng dụng”
 
 2. THANH TÌM KIẾM DỊCH VỤ:
-   Cho phép tìm kiếm dịch vụ theo tên.
-   Ví dụ:
-   “Vệ sinh máy lạnh”
-   “Chăm sóc trẻ em”
-   “Giặt ủi”
+
+Cho phép tìm kiếm dịch vụ theo tên.
+
+Ví dụ:
+
+* Vệ sinh máy lạnh
+* Chăm sóc trẻ em
+* Giặt ủi
 
 3. DANH MỤC DỊCH VỤ:
-   Hiển thị các danh mục:
 
 * Vệ sinh nhà
 * Vệ sinh thiết bị
@@ -207,32 +212,29 @@ Trang chủ phải thể hiện nền tảng đa dịch vụ gia đình.
 
 Mỗi danh mục có biểu tượng, hình ảnh và mô tả ngắn.
 
-4. BANNER DỊCH VỤ NỔI BẬT:
-   Hiển thị các dịch vụ hoặc chương trình nổi bật.
+4. BANNER DỊCH VỤ NỔI BẬT
 
-5. DỊCH VỤ PHỔ BIẾN:
-   Hiển thị các dịch vụ có lượt sử dụng/quan tâm cao bằng dữ liệu mẫu.
+5. DỊCH VỤ PHỔ BIẾN
 
-6. DỊCH VỤ ĐỀ XUẤT:
-   Hiển thị một số dịch vụ đề xuất dựa trên dữ liệu mẫu.
+6. DỊCH VỤ ĐỀ XUẤT
 
-7. KHUYẾN MÃI:
-   Hiển thị các chương trình khuyến mãi nổi bật.
+7. KHUYẾN MÃI
 
 8. GIỚI THIỆU NỀN TẢNG:
 
-* Nền tảng kết nối Customer với Staff
+* Kết nối Customer với Staff
 * Staff được tuyển chọn và quản lý
 * Hệ thống hỗ trợ điều phối
 * AI hỗ trợ tư vấn dịch vụ
 
 9. QUY TRÌNH:
-   Chọn dịch vụ → Chọn Package → Chọn Add-on → Nhập thông tin dịch vụ → Chọn địa chỉ → Chọn thời gian → Chọn phương thức điều phối → Xác nhận Booking.
+
+Chọn dịch vụ → Chọn Package → Chọn Add-on → Nhập thông tin dịch vụ → Chọn địa chỉ → Chọn thời gian → Chọn phương thức điều phối → Xác nhận Booking.
 
 10. TẢI ỨNG DỤNG:
 
 * Giới thiệu Mobile App
-* Mã QR mẫu
+* QR mẫu
 * App Store mẫu
 * Google Play mẫu
 
@@ -247,9 +249,9 @@ Mỗi danh mục có biểu tượng, hình ảnh và mô tả ngắn.
 
 13. FAQ
 
-14. NÚT AI ASSISTANT:
-    Có nút nổi hoặc khu vực mở AI Assistant.
-    AI hỗ trợ tư vấn lựa chọn dịch vụ.
+14. AI ASSISTANT:
+
+AI hỗ trợ tư vấn lựa chọn dịch vụ.
 
 AI không tự tạo Booking hoặc thanh toán.
 
@@ -267,8 +269,6 @@ AI không tự tạo Booking hoặc thanh toán.
 ---
 
 ## TRANG DỊCH VỤ
-
-Trang dịch vụ phải hỗ trợ nhiều loại dịch vụ khác nhau.
 
 Hiển thị:
 
@@ -293,7 +293,7 @@ KHÔNG sử dụng một biểu mẫu chung cho tất cả dịch vụ.
 
 Thông tin và trường nhập phải thay đổi theo loại dịch vụ.
 
-Ví dụ:
+VÍ DỤ:
 
 VỆ SINH MÁY LẠNH:
 
@@ -352,7 +352,7 @@ Mỗi dịch vụ có thể có các trường dữ liệu riêng.
 
 Website chỉ mô phỏng/giới thiệu luồng, không thực hiện Booking thật.
 
-Luồng nghiệp vụ:
+Luồng:
 
 1. Chọn nhóm dịch vụ
 2. Chọn dịch vụ
@@ -372,7 +372,6 @@ Luồng nghiệp vụ:
 Có hai phương thức điều phối:
 
 PHƯƠNG THỨC A — KHÁCH CHỌN STAFF:
-Cho phép xem:
 
 * Ảnh đại diện
 * Tên
@@ -383,7 +382,7 @@ Cho phép xem:
 * Trạng thái hoạt động
 
 PHƯƠNG THỨC B — HỆ THỐNG TỰ ĐỘNG ĐIỀU PHỐI:
-Khách không cần chọn Staff.
+
 Hệ thống tìm Staff dựa trên:
 
 * Dịch vụ
@@ -393,7 +392,7 @@ Hệ thống tìm Staff dựa trên:
 * Trạng thái hoạt động
 * Số lượng Staff cần thiết
 
-Trạng thái giao diện cần hỗ trợ:
+Trạng thái:
 
 * Đang tìm Staff
 * Đã tìm thấy Staff
@@ -418,15 +417,15 @@ AI có thể:
 * Đề xuất Add-on
 * Đề xuất thời gian
 * Hỗ trợ nhập thông tin Booking
-* Trả lời câu hỏi thường gặp
+* Trả lời FAQ
 * Giải thích giá
 * Giải thích thời lượng
 
-Ví dụ người dùng nhập:
+Ví dụ:
 
 “Tôi muốn vệ sinh 3 máy lạnh vào chiều thứ bảy.”
 
-AI phải có khả năng phân tích thành:
+AI phân tích:
 
 * Dịch vụ: Vệ sinh máy lạnh
 * Số lượng: 3 máy
@@ -436,7 +435,7 @@ AI phải có khả năng phân tích thành:
 
 AI chỉ hỗ trợ tư vấn.
 
-AI KHÔNG được tự ý:
+AI KHÔNG được:
 
 * Tạo Booking
 * Xác nhận Booking
@@ -446,7 +445,7 @@ AI KHÔNG được tự ý:
 * Phân phối tiền
 * Đình chỉ Staff
 
-Trước khi thực hiện Booking, Customer phải:
+Trước khi Booking:
 
 1. Xem tóm tắt
 2. Chọn phương thức thanh toán
@@ -457,7 +456,7 @@ Trước khi thực hiện Booking, Customer phải:
 
 ## DỮ LIỆU MẪU
 
-Tạo dữ liệu mẫu đa dạng:
+Tạo dữ liệu mẫu:
 
 * Service
 * Category
@@ -471,22 +470,22 @@ Tạo dữ liệu mẫu đa dạng:
 * Conversation
 * Review
 
-Staff phải có năng lực khác nhau.
+Staff có năng lực khác nhau.
 
 Ví dụ:
 
-* Staff chỉ vệ sinh nhà
-* Staff chuyên vệ sinh máy lạnh
-* Staff chuyên vệ sinh máy giặt
-* Staff chuyên chăm sóc trẻ em
-* Staff chuyên chăm sóc người cao tuổi
-* Staff chuyên giặt ủi
-* Staff chuyên chăm sóc thú cưng
-* Staff chuyên chăm sóc cây cảnh
+* Chỉ vệ sinh nhà
+* Chuyên vệ sinh máy lạnh
+* Chuyên vệ sinh máy giặt
+* Chuyên chăm sóc trẻ em
+* Chuyên chăm sóc người cao tuổi
+* Chuyên giặt ủi
+* Chuyên chăm sóc thú cưng
+* Chuyên chăm sóc cây cảnh
 
-Một Staff có thể có nhiều kỹ năng nhưng không được mặc định có tất cả kỹ năng.
+Một Staff có thể có nhiều kỹ năng nhưng không mặc định có tất cả kỹ năng.
 
-Staff phải có:
+Staff có:
 
 * Thông tin cơ bản
 * Ảnh đại diện
@@ -512,7 +511,21 @@ Hiển thị:
 Staff KHÔNG tự tạo tài khoản ứng dụng.
 
 Website chỉ tiếp nhận thông tin đăng ký.
+
 Sau khi được công ty tuyển chọn, tài khoản Staff được tạo bởi quản trị viên.
+
+Form đăng ký phải hỗ trợ đăng ký NHIỀU DỊCH VỤ cùng lúc.
+
+Ví dụ:
+
+☐ Dọn nhà
+☐ Tổng vệ sinh
+☐ Vệ sinh máy lạnh
+☐ Chăm sóc trẻ em
+☐ Chăm sóc người cao tuổi
+☐ Giặt ủi
+☐ Chăm sóc thú cưng
+☐ Chăm sóc cây cảnh
 
 ---
 
@@ -554,7 +567,7 @@ Hiển thị:
 * Tìm kiếm
 * Lọc
 * Bài viết nổi bật
-* Trang chi tiết bài viết
+* Trang chi tiết
 * Dữ liệu mẫu
 
 ---
@@ -572,16 +585,284 @@ Hiển thị:
 
 ---
 
+# PHẠM VI WEBSITE QUẢN TRỊ SAU NÀY
+
+KHÔNG lập trình UI Admin ở giai đoạn hiện tại.
+
+Tuy nhiên phải chuẩn bị kiến trúc để Admin sau này quản lý Staff và quy trình tuyển chọn theo mô hình sau.
+
+## 1. LUỒNG DỮ LIỆU ĐẦU VÀO — NGUỒN ỨNG VIÊN
+
+Ứng viên có thể đến từ:
+
+* Website
+* Google Forms
+* Zalo
+* Đi ngang qua
+* Nguồn khác nếu cần mở rộng
+
+Tất cả dữ liệu ứng viên mới phải đổ vào trạng thái riêng:
+
+CHỜ DUYỆT — Pending
+
+Admin kiểm tra thông tin tại cột CHỜ DUYỆT trước khi quyết định tiếp nhận.
+
+Không đưa ứng viên mới trực tiếp vào các hồ sơ đang xử lý.
+
+Hồ sơ ứng viên phải hỗ trợ các trường:
+
+* Họ tên
+* Số điện thoại
+* Email
+* Số CCCD
+* Năm sinh
+* Giới tính
+* Khu vực sống
+* Nguồn ứng viên
+* Danh sách dịch vụ đăng ký
+* Ngày đăng ký
+* Ghi chú
+
+Nguồn ứng viên:
+
+* Web
+* Google Forms
+* Zalo
+* Đi ngang qua
+
+ĐĂNG KÝ ĐA DỊCH VỤ:
+
+Ứng viên có thể chọn nhiều dịch vụ cùng lúc.
+
+Không giới hạn mỗi ứng viên chỉ được chọn một dịch vụ.
+
+Dữ liệu phải được thiết kế dạng danh sách kỹ năng/dịch vụ, không hard-code một trường service duy nhất.
+
+---
+
+## 2. QUẢN LÝ KANBAN TUYỂN DỤNG STAFF
+
+Admin sau này sử dụng Kanban gồm đúng 4 cột:
+
+1. CHỜ DUYỆT
+2. ĐANG TIẾP NHẬN
+3. ĐÀO TẠO
+4. ĐÁNH GIÁ
+
+Luồng:
+
+CHỜ DUYỆT → ĐANG TIẾP NHẬN → ĐÀO TẠO → ĐÁNH GIÁ
+
+Có thanh tìm kiếm:
+
+* Tìm theo tên
+* Tìm theo số điện thoại
+
+Mỗi Candidate Card hiển thị tối thiểu:
+
+* Họ tên
+* Số điện thoại
+* Khu vực
+* Nguồn
+* Dịch vụ đăng ký
+* Ngày đăng ký
+* Trạng thái
+
+Không tạo thêm các cột Kanban nghiệp vụ khác nếu chưa được yêu cầu.
+
+---
+
+## 3. MODAL HỒ SƠ ỨNG VIÊN
+
+Không sử dụng Progress Stepper 1-2-3.
+
+Modal sử dụng:
+
+* Badge trạng thái nhỏ ở phía trên
+* Nội dung Form chiếm phần lớn diện tích
+* Các section rõ ràng
+* Nút thao tác phù hợp với trạng thái hiện tại
+
+Không dùng Progress Stepper để tránh chiếm diện tích.
+
+---
+
+## 4. GIAI ĐOẠN CHỜ DUYỆT
+
+Admin xem và kiểm tra:
+
+* Thông tin cá nhân
+* CCCD
+* Email
+* Số điện thoại
+* Năm sinh
+* Giới tính
+* Khu vực sống
+* Nguồn ứng viên
+* Dịch vụ đăng ký
+* Ghi chú
+
+Admin có thể:
+
+* Tiếp nhận
+* Từ chối
+* Xem chi tiết
+
+Khi chọn “Tiếp nhận”:
+
+CHỜ DUYỆT → ĐANG TIẾP NHẬN
+
+Không tạo bước trung gian khác.
+
+---
+
+## 5. GIAI ĐOẠN ĐANG TIẾP NHẬN
+
+KHÔNG có chức năng hẹn lịch.
+
+Mô hình văn phòng mở: ứng viên đến là tiếp nhận và xử lý hồ sơ.
+
+Form chỉ tập trung vào checklist giấy tờ:
+
+* ☐ CCCD
+* ☐ Hộ khẩu
+* ☐ Giấy khám sức khỏe
+
+Có trường:
+
+* Nhận xét
+* Ghi chú Admin
+
+Khi hoàn tất tiếp nhận:
+
+ĐANG TIẾP NHẬN → ĐÀO TẠO
+
+---
+
+## 6. GIAI ĐOẠN ĐÀO TẠO
+
+Không cho Admin nhập tài khoản/mật khẩu thủ công.
+
+Không tạo nhiều nút thao tác gây nhầm lẫn.
+
+Chỉ có một thao tác chính:
+
+“Hoàn tất Đào tạo & Cấp tài khoản”
+
+Khi Admin thực hiện:
+
+1. Hệ thống xác nhận hoàn tất đào tạo.
+2. Sinh tài khoản Staff.
+3. Gán các dịch vụ/kỹ năng đã được duyệt.
+4. Giả lập gửi thông tin tài khoản qua Email.
+5. Cập nhật trạng thái ứng viên.
+6. Chuyển hồ sơ sang ĐÁNH GIÁ.
+
+Luồng:
+
+ĐÀO TẠO → ĐÁNH GIÁ
+
+Không cho Admin nhập mật khẩu thủ công trong UI.
+
+Không tạo nhiều nút cấp tài khoản riêng biệt.
+
+---
+
+## 7. GIAI ĐOẠN ĐÁNH GIÁ
+
+Không cho Admin nhập lương thủ công.
+
+Admin chỉ chọn Cấp bậc:
+
+* Thực tập sinh
+* Tiêu chuẩn
+* Chuyên nghiệp
+
+Hệ thống tự động ánh xạ cấp bậc với mức phí/lương tương ứng.
+
+Hiển thị mức phí/lương dưới dạng READ-ONLY.
+
+Ví dụ:
+
+Cấp bậc:
+[ Tiêu chuẩn ▼ ]
+
+Mức phí/lương:
+[ 45.000 VNĐ/giờ ]
+
+Admin không thể sửa trực tiếp mức phí/lương tại Form đánh giá.
+
+Mức phí/lương phải được thiết kế dưới dạng cấu hình/dữ liệu để sau này Backend có thể quản lý.
+
+---
+
+## 8. STAFF SAU KHI ĐƯỢC DUYỆT
+
+Sau khi hoàn thành quy trình tuyển chọn, dữ liệu ứng viên có thể trở thành hồ sơ Staff.
+
+Staff phải có:
+
+* Thông tin cá nhân
+* Email
+* Số điện thoại
+* CCCD
+* Năm sinh
+* Giới tính
+* Khu vực sống
+* Ảnh đại diện
+* Kinh nghiệm
+* Cấp bậc
+* Mức phí/lương
+* Danh sách kỹ năng
+* Danh sách dịch vụ có thể thực hiện
+* Khu vực hoạt động
+* Trạng thái hoạt động
+* Đánh giá
+
+Danh sách dịch vụ của Staff được kế thừa từ năng lực/dịch vụ đã được duyệt.
+
+Không tự động gán toàn bộ dịch vụ cho Staff.
+
+---
+
+## 9. KIẾN TRÚC ADMIN SAU NÀY
+
+Admin phải có Layout và Navigation riêng với Website Khách.
+
+Các module dự kiến:
+
+/admin/login
+/admin/dashboard
+/admin/staff
+/admin/customers
+/admin/services
+/admin/bookings
+/admin/orders
+/admin/payments
+/admin/promotions
+/admin/statistics
+
+Module Staff sau này có thể mở rộng:
+
+/admin/staff
+/admin/staff/candidates
+/admin/staff/active
+/admin/staff/recruitment
+
+Không triển khai các màn hình trên ở giai đoạn hiện tại.
+
+---
+
 ## KIẾN TRÚC DỰ ÁN
 
 src/
 ├── app/
-│   ├── (guest)/
-│   └── admin/
+│ ├── (guest)/
+│ └── admin/
 ├── components/
-│   ├── common/
-│   ├── guest/
-│   └── admin/
+│ ├── common/
+│ ├── guest/
+│ └── admin/
 ├── data/
 ├── types/
 ├── lib/
@@ -595,6 +876,8 @@ Website Khách và Website Quản trị phải có Layout và Navigation riêng.
 Các thành phần dùng chung đặt trong common.
 
 Không đưa logic quản trị vào Website Khách.
+
+Kiến trúc phải cho phép phát triển Admin sau này mà không ảnh hưởng lớn đến Guest.
 
 ---
 
@@ -616,9 +899,50 @@ Tạo TypeScript types cho:
 * Conversation
 * Review
 
-Thiết kế kiểu dữ liệu để sau này dễ ánh xạ với API Spring Boot.
+Bổ sung các type phục vụ tuyển dụng Staff:
 
-Đặc biệt ServiceRequirement phải hỗ trợ thông tin khác nhau tùy loại dịch vụ.
+* Candidate
+* CandidateSource
+* CandidateStatus
+* RecruitmentStage
+* RecruitmentDocument
+* StaffLevel
+* StaffSalaryConfig
+
+Candidate phải hỗ trợ:
+
+* Thông tin cá nhân
+* Nguồn ứng viên
+* Danh sách dịch vụ đăng ký
+* Trạng thái tuyển dụng
+* Giấy tờ
+* Nhận xét
+* Thông tin đào tạo
+* Cấp bậc
+
+CandidateStatus phải hỗ trợ tối thiểu:
+
+* PENDING
+* RECEIVING
+* TRAINING
+* EVALUATION
+
+CandidateSource:
+
+* WEB
+* GOOGLE_FORMS
+* ZALO
+* WALK_IN
+
+StaffLevel:
+
+* INTERN
+* STANDARD
+* PROFESSIONAL
+
+ServiceRequirement phải hỗ trợ thông tin khác nhau tùy loại dịch vụ.
+
+Thiết kế TypeScript types để sau này dễ ánh xạ với REST API Spring Boot.
 
 ---
 
@@ -626,23 +950,23 @@ Thiết kế kiểu dữ liệu để sau này dễ ánh xạ với API Spring B
 
 Thiết kế hiện đại, chuyên nghiệp, đáng tin cậy và thân thiện với gia đình.
 
-Có thể tham khảo cách tổ chức nội dung và trải nghiệm người dùng của bTaskee nhưng:
+Có thể tham khảo cách tổ chức nội dung và UX của các nền tảng dịch vụ gia đình nhưng:
 
 * Không sao chép giao diện
 * Không sao chép nội dung
 * Không sao chép hình ảnh
 * Không sao chép thương hiệu
 
-Ưu tiên thiết kế nhận diện riêng cho CleanMaster.
+Ưu tiên nhận diện riêng cho CleanMaster.
 
 Yêu cầu:
 
 * Responsive
 * Typography rõ ràng
 * Khoảng trắng hợp lý
-* Hệ thống màu sắc nhất quán
+* Hệ thống màu nhất quán
 * Card nhất quán
-* Nút hành động rõ ràng
+* CTA rõ ràng
 * Animation nhẹ
 * Accessibility cơ bản
 * Loading state
@@ -680,20 +1004,30 @@ Không gán tất cả dịch vụ cho tất cả Staff.
 
 Không cho AI tự ý tạo Booking hoặc thanh toán.
 
+Phần Admin chỉ được chuẩn bị kiến trúc, TypeScript types và cấu trúc thư mục cần thiết.
+
+KHÔNG tự động triển khai Admin UI.
+
 ---
 
 ## SAU KHI HOÀN THÀNH
 
 1. Kiểm tra toàn bộ đường dẫn Website Khách.
-2. Kiểm tra thanh điều hướng và các menu xổ xuống.
+2. Kiểm tra thanh điều hướng và menu xổ xuống.
 3. Kiểm tra tất cả nhóm dịch vụ.
-4. Kiểm tra giao diện chi tiết của nhiều loại dịch vụ.
-5. Kiểm tra khả năng hiển thị khác nhau của biểu mẫu theo từng dịch vụ.
+4. Kiểm tra giao diện chi tiết nhiều loại dịch vụ.
+5. Kiểm tra form thay đổi theo từng dịch vụ.
 6. Kiểm tra dữ liệu Staff và kỹ năng Staff.
 7. Kiểm tra giao diện AI Assistant.
-8. Kiểm tra responsive trên máy tính, máy tính bảng và điện thoại.
-9. Kiểm tra toàn bộ mã TypeScript.
-10. Chạy lệnh xây dựng dự án và sửa toàn bộ lỗi.
+8. Kiểm tra responsive desktop/tablet/mobile.
+9. Kiểm tra toàn bộ TypeScript.
+10. Chạy lệnh build và sửa toàn bộ lỗi.
 11. Tạo README mô tả cấu trúc.
-12. Giữ nguyên kiến trúc `/admin`.
-13. Không tự chuyển sang lập trình Admin khi chưa được yêu cầu.
+12. Giữ nguyên kiến trúc /admin.
+13. Không tự chuyển sang lập trình Admin.
+14. Đảm bảo kiến trúc Admin sau này hỗ trợ luồng tuyển dụng:
+    CHỜ DUYỆT → ĐANG TIẾP NHẬN → ĐÀO TẠO → ĐÁNH GIÁ.
+15. Đảm bảo Candidate hỗ trợ đa dịch vụ và nhiều nguồn ứng viên.
+16. Đảm bảo Staff có danh sách kỹ năng riêng.
+17. Đảm bảo cấp bậc Staff có thể ánh xạ tự động với mức phí/lương.
+18. Không để các logic tuyển dụng Admin làm ảnh hưởng đến Website Khách.
