@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { type ServicePackage, servicePackages } from '../../data/services'
+import { type ServicePackage, servicePackages as templates } from '../../data/services'
+import { type CatalogPage, type CatalogDetail } from '../../api/catalog'
+import { webCatalogView } from '../../api/catalog-view'
+import { useCatalogResource } from '../../hooks/useCatalogResource'
+import CatalogState from '../../components/common/CatalogState'
 
 function AppDownloadModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
@@ -33,7 +37,9 @@ function AppDownloadModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-function ServiceCard({ service, onBook }: { service: ServicePackage; onBook: () => void }) {
+function ServiceCard({ service: summary, onBook }: { service: ServicePackage; onBook: () => void }) {
+  const result = useCatalogResource<CatalogDetail>('/services/' + summary.id)
+  const service = result.data ? webCatalogView(result.data.service, result.data) : summary
   return (
     <article className="group flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200/80 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10">
       <div className="relative overflow-hidden">
@@ -68,6 +74,11 @@ function ServiceCard({ service, onBook }: { service: ServicePackage; onBook: () 
 
 export default function Services() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const result = useCatalogResource<CatalogPage>('/services?size=100')
+  const servicePackages = templates.flatMap(template => {
+    const item = result.data?.items.find(service => service.code === template.code)
+    return item ? [webCatalogView(item)] : []
+  })
 
   return (
     <div className="bg-slate-50">
@@ -83,6 +94,7 @@ export default function Services() {
 
       <main className="mx-auto max-w-7xl px-5 py-14 sm:py-20 lg:px-8">
         <div className="grid gap-7 lg:grid-cols-3">
+          {(result.loading || result.error) && <CatalogState loading={result.loading} error={result.error} onRetry={result.retry} />}
           {servicePackages.map((service) => <ServiceCard key={service.id} service={service} onBook={() => setIsModalOpen(true)} />)}
         </div>
         <section className="mt-14 rounded-3xl border border-dashed border-emerald-300 bg-emerald-50 p-7 sm:p-9">

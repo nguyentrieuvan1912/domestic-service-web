@@ -137,10 +137,10 @@ export default function AdminAnalytics() {
                 stroke="#64748b"
                 fontSize={12}
                 tickLine={false}
-                tickFormatter={(val) => `${val / 1000000}M`}
+                tickFormatter={(val: number) => `${val / 1000000}M`}
               />
               <Tooltip
-                formatter={(value: any) => [formatVnd(Number(value))]}
+                formatter={(value) => [formatVnd(Number(value || 0))]}
                 contentStyle={{
                   backgroundColor: '#ffffff',
                   borderColor: '#e2e8f0',
@@ -205,7 +205,7 @@ export default function AdminAnalytics() {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(val: any) => [`${val}%`]}
+                    formatter={(val) => [`${val}%`]}
                     contentStyle={{
                       backgroundColor: '#ffffff',
                       borderColor: '#e2e8f0',
@@ -262,7 +262,7 @@ export default function AdminAnalytics() {
                 <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} />
                 <YAxis dataKey="district" type="category" stroke="#64748b" fontSize={12} tickLine={false} />
                 <Tooltip
-                  formatter={(val: any) => [`${val} đơn đặt dịch vụ`]}
+                  formatter={(val) => [`${val} đơn đặt dịch vụ`]}
                   contentStyle={{
                     backgroundColor: '#ffffff',
                     borderColor: '#e2e8f0',

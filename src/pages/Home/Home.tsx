@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom'
 import { promotions } from '../../data/promotions'
-import { servicePackages } from '../../data/services'
+import { servicePackages as templates } from '../../data/services'
+import { type CatalogPage } from '../../api/catalog'
+import { webCatalogView } from '../../api/catalog-view'
+import { useCatalogResource } from '../../hooks/useCatalogResource'
+import CatalogState from '../../components/common/CatalogState'
 
 const processSteps = [
   { number: '01', title: 'Chọn dịch vụ', description: 'Chọn gói dọn dẹp phù hợp với nhu cầu của gia đình.' },
@@ -35,6 +39,11 @@ function ArrowIcon() {
 }
 
 export default function Home() {
+  const result = useCatalogResource<CatalogPage>('/services?size=100')
+  const servicePackages = templates.flatMap(template => {
+    const item = result.data?.items.find(service => service.code === template.code)
+    return item ? [webCatalogView(item)] : []
+  })
   return (
     <div className="overflow-hidden bg-white">
       <section className="relative isolate bg-[#f3faf7]">
@@ -101,6 +110,7 @@ export default function Home() {
       <section className="bg-slate-50 px-5 py-20 sm:py-24 lg:px-8">
         <SectionHeading eyebrow="Dịch vụ nổi bật" title="Chọn cách chăm sóc nhà phù hợp" description="Các gói dịch vụ được thiết kế cho những nhu cầu phổ biến của gia đình hiện đại." />
         <div className="mx-auto mt-12 grid max-w-7xl gap-6 lg:grid-cols-3">
+          {(result.loading || result.error) && <CatalogState loading={result.loading} error={result.error} onRetry={result.retry} />}
           {servicePackages.map((service) => (
             <article key={service.id} className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10">
               <div className="relative overflow-hidden"><img src={service.imageUrl} alt={service.name} className="aspect-[1.65/1] w-full object-cover transition duration-500 group-hover:scale-105" /><span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-emerald-700">CleanMaster</span></div>

@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { servicePackages } from '../../data/services'
+import { type CatalogPage, type CatalogDetail } from '../../api/catalog'
+import { webCatalogView } from '../../api/catalog-view'
+import { useCatalogResource } from '../../hooks/useCatalogResource'
+import CatalogState from '../../components/common/CatalogState'
 
 function AppDownloadModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
@@ -17,7 +21,25 @@ function AppDownloadModal({ onClose }: { onClose: () => void }) {
 
 export default function ServiceDetail() {
   const { slug } = useParams<{ slug: string }>()
-  const service = servicePackages.find((item) => item.slug === slug)
+  return /^\d+$/.test(slug || '') ? <DetailLoader id={slug!} /> : <SlugLookup slug={slug || ''} />
+}
+
+function SlugLookup({ slug }: { slug: string }) {
+  const result = useCatalogResource<CatalogPage>('/services?size=100')
+  if (result.loading || result.error) return <CatalogState loading={result.loading} error={result.error} onRetry={result.retry} />
+  const template = servicePackages.find(item => item.slug === slug)
+  const item = template && result.data?.items.find(service => service.code === template.code)
+  return item ? <DetailLoader id={String(item.id)} /> : <CatalogState error="Không tìm thấy dịch vụ." />
+}
+
+function DetailLoader({ id }: { id: string }) {
+  const result = useCatalogResource<CatalogDetail>('/services/' + encodeURIComponent(id))
+  if (result.loading || result.error || !result.data) return <CatalogState loading={result.loading} error={result.error} onRetry={result.retry} />
+  return <ServiceDetailContent key={result.data.service.id} detail={result.data} />
+}
+
+function ServiceDetailContent({ detail }: { detail: CatalogDetail }) {
+  const service = webCatalogView(detail.service, detail)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   if (!service) {
