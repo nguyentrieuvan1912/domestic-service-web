@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import StaffProvisionDialog from '../../components/admin/StaffProvisionDialog'
+import { useEffect, useState } from 'react'
 import type { Staff, StaffStatus } from '../../data/mockAdminStaff'
-import { mockAdminStaff } from '../../data/mockAdminStaff'
-import { mockAdminServices } from '../../data/mockAdminServices'
+import { getAdminStaff as getStaff, saveAdminStaff as saveStaffAccount, getAdminCatalog } from '../../api/operations'
+import { useNavigate } from 'react-router-dom'
+import type { Service } from '../../data/mockAdminServices'
 import StaffModal from '../../features/admin/staff/StaffModal'
 import StaffTable from '../../features/admin/staff/StaffTable'
 
@@ -14,14 +16,26 @@ const tabs: { id: StaffTab; label: string }[] = [
 ]
 
 export default function AdminStaff() {
+  const [provisionOpen,setProvisionOpen]=useState(false)
+  const [filterMonth,setFilterMonth]=useState('CURRENT')
   const [activeTab, setActiveTab] = useState<StaffTab>('ACTIVE')
-  const [staffList, setStaffList] = useState<Staff[]>(mockAdminStaff)
+  const [staffList, setStaffList] = useState<Staff[]>([])
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const navigate = useNavigate()
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [attempt, setAttempt] = useState(0)
+  const [services, setServices] = useState<Service[]>([])
+  useEffect(() => { void getAdminCatalog().then(data => setServices(data.services)).catch(cause => setError(cause.message)) }, [])
+  useEffect(() => {
+    let active = true
+    void getStaff(filterMonth).then(data => { if (active) { setStaffList(data); setError('') } }).catch(cause => { if (active) setError(cause.message) }).finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [attempt,filterMonth])
 
   // Advanced Filters State
-  const [filterMonth, setFilterMonth] = useState('CURRENT')
   const [filterArea, setFilterArea] = useState('ALL')
   const [filterRank, setFilterRank] = useState('ALL')
   const [sortBy, setSortBy] = useState('DEFAULT')
@@ -47,19 +61,15 @@ export default function AdminStaff() {
       return 0
     })
 
-  const saveStaff = (member: Staff) => {
-    setStaffList((current) =>
-      current.some((item) => item.id === member.id)
-        ? current.map((item) => (item.id === member.id ? member : item))
-        : [member, ...current]
-    )
+  const saveStaff = async (member: Staff) => {
+    await saveStaffAccount(member)
+    setStaffList(await getStaff(filterMonth))
     setEditingStaff(null)
     setIsModalOpen(false)
   }
 
   const handleOpenNewModal = () => {
-    setEditingStaff(null)
-    setIsModalOpen(true)
+    navigate('/admin/candidates')
   }
 
   const handleOpenEditModal = (member: Staff) => {
@@ -69,6 +79,10 @@ export default function AdminStaff() {
 
   return (
     <div className="space-y-8">
+      {provisionOpen && <StaffProvisionDialog close={()=>setProvisionOpen(false)} saved={()=>{setLoading(true);setAttempt(x=>x+1)}} />}
+      {loading && <p role="status">Đang tải nhân viên...</p>}
+      {error && <div role="alert" className="text-red-600">{error} <button className="underline" onClick={() => { setLoading(true); setAttempt(value => value + 1) }}>Thử lại</button></div>}
+      <p className="text-sm text-slate-500">Tài khoản và trạng thái được lưu trên hệ thống. Năng lực, vùng hoạt động và thống kê được đọc từ Booking/Finance.</p>
       {/* Top Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
@@ -88,11 +102,12 @@ export default function AdminStaff() {
             onClick={handleOpenNewModal}
             className="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
           >
-            + Thêm nhân viên mới
+            + Cấp tài khoản từ ứng viên đã duyệt
           </button>
         </div>
       </div>
 
+      <button className="text-emerald-700 underline text-sm" onClick={()=>setProvisionOpen(true)}>Cấp tài khoản sau tuyển dụng trực tiếp (V5)</button>
       {/* Filter Tabs & Search Bar Container */}
       <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {/* Row 1: Status Tabs & Search Input */}
@@ -150,15 +165,18 @@ export default function AdminStaff() {
 
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 min-w-0 flex-1">
             <select
-              value={filterMonth}
+              title="Ca theo tháng làm việc; thu nhập theo tháng quyết toán"
+              aria-label="Thống kê lũy kế hiện tại" value={filterMonth}
               onChange={(e) => setFilterMonth(e.target.value)}
               className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-2xs"
             >
-              <option value="CURRENT">Tháng này (09/2026)</option>
-              <option value="PREVIOUS">Tháng trước (08/2026)</option>
+              <option value="CURRENT">Tháng này</option>
+              <option value="PREVIOUS">Thống kê lũy kế</option>
             </select>
 
             <select
+              disabled
+              title="Chưa kết nối vùng hoạt động"
               value={filterArea}
               onChange={(e) => setFilterArea(e.target.value)}
               className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-2xs"
@@ -183,6 +201,8 @@ export default function AdminStaff() {
             </select>
 
             <select
+              disabled
+              title="Chưa có dữ liệu KPI"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-2xs"
@@ -197,8 +217,9 @@ export default function AdminStaff() {
 
         {/* Staff Data Table */}
         <StaffTable
+          accountOnly={false}
           staff={visibleStaff}
-          services={mockAdminServices}
+          services={services}
           onEdit={handleOpenEditModal}
         />
       </section>
@@ -206,9 +227,11 @@ export default function AdminStaff() {
       {/* Slide-over Profile/Edit Modal */}
       {isModalOpen && (
         <StaffModal
+          period={filterMonth}
+          accountOnly={false}
           key={editingStaff?.id ?? 'new-staff'}
           staff={editingStaff}
-          services={mockAdminServices}
+          services={services}
           onClose={() => setIsModalOpen(false)}
           onSave={saveStaff}
         />

@@ -19,7 +19,7 @@ export interface Staff {
   status: StaffStatus
   statusNote: string
   rank: StaffLevel
-  baseFee: number
+  baseFee: number | null
   joinDate: string
   income: number
   averageRating: number

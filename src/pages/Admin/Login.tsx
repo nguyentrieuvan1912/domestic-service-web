@@ -6,17 +6,24 @@ import { useAdminAuth } from '../../hooks/useAdminAuth'
 export default function AdminLogin() {
   const navigate = useNavigate()
   const { isAuthenticated, login } = useAdminAuth()
-  const [email, setEmail] = useState('admin@cleanmaster.vn')
-  const [password, setPassword] = useState('cleanmaster')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
   if (isAuthenticated) {
     return <Navigate to="/admin/dashboard" replace />
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    login()
-    navigate('/admin/dashboard', { replace: true })
+    if (busy) return
+    setError(''); setBusy(true)
+    try {
+      await login(email, password)
+      navigate('/admin/dashboard', { replace: true })
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Đăng nhập thất bại.') }
+    finally { setBusy(false) }
   }
 
   return (
@@ -30,9 +37,10 @@ export default function AdminLogin() {
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-slate-700">
-            Email
+            Email hoặc số điện thoại
             <input
-              type="email"
+              type="text"
+              autoComplete="username"
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -43,14 +51,16 @@ export default function AdminLogin() {
             Mật khẩu
             <input
               type="password"
+              autoComplete="current-password"
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
-          <button type="submit" className="w-full rounded-lg bg-slate-950 px-4 py-3 font-semibold text-white transition hover:bg-emerald-600">
-            Đăng nhập
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+          <button disabled={busy} type="submit" className="w-full rounded-lg bg-slate-950 px-4 py-3 font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-50">
+            {busy ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
       </section>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import {
   Area,
   AreaChart,
@@ -13,18 +13,23 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import {
-  mockAnalyticsKpis,
-  mockMonthlyData,
-  mockServiceShareData,
-  mockTopDistrictsData,
-} from '../../data/mockAdminAnalytics'
+import { getOverview, emptyOverview, overviewKpis, overviewYear } from '../../api/overview'
+import { exportCsv } from '../../api/operations'
+import { useAdminResource } from '../../hooks/useAdminResource'
 
 export default function AdminAnalytics() {
   const [period, setPeriod] = useState('year')
 
+  const loader=useCallback(()=>getOverview(period),[period])
+  const resource = useAdminResource(loader, emptyOverview)
+  const data = resource.data
+  const months = period === 'month' ? [new Date().getMonth()+1] : period.startsWith('q') ? Array.from({length:3}, (_,i) => (Number(period.slice(1))-1)*3+i+1) : Array.from({length:12}, (_,i)=>i+1)
+  const kpis = overviewKpis(data, months)
+  const monthlyData = data.monthly.filter(m => months.includes(Number(m.month.slice(1))))
+  const serviceShareData = data.booking.serviceShares.map((x,i)=>({...x,amount:new Intl.NumberFormat('vi-VN').format(x.amount)+'đ',color:['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ef4444'][i%5]}))
+  const topDistrictsData = data.booking.districts
   const handleExport = () => {
-    alert('Hệ thống đang chuẩn bị bộ file Báo cáo Thống kê Analytics (Format Excel / PDF)...')
+    exportCsv('bao-cao-'+overviewYear+'.csv', [['Tháng','Doanh thu đã xác nhận','Chuyển tiền Staff đã xác nhận','Phí đã quyết toán'], ...data.monthly.map(m => [m.month,m.revenue,m.payout,m.platformFee])])
   }
 
   // Format currency tooltip
@@ -33,6 +38,8 @@ export default function AdminAnalytics() {
 
   return (
     <div className="space-y-8">
+      {resource.loading && <p role="status">Đang tải báo cáo...</p>}
+      {resource.error && <p role="alert">{resource.error} <button onClick={resource.retry}>Thử lại</button></p>}
       {/* Header & Filter Toolbar */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
@@ -54,7 +61,7 @@ export default function AdminAnalytics() {
             onChange={(e) => setPeriod(e.target.value)}
             className="rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
           >
-            <option value="month">Tháng này (Thg 9/2026)</option>
+            <option value="month">Tháng này</option>
             <option value="q1">Quý 1 / 2026</option>
             <option value="q2">Quý 2 / 2026</option>
             <option value="q3">Quý 3 / 2026</option>
@@ -66,14 +73,14 @@ export default function AdminAnalytics() {
             onClick={handleExport}
             className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 whitespace-nowrap"
           >
-            📊 Xuất Excel / PDF
+            📊 Xuất CSV
           </button>
         </div>
       </div>
 
       {/* Khu vực 1 - Summary KPI Cards Grid (4 columns) */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {mockAnalyticsKpis.map((kpi) => (
+        {kpis.map((kpi) => (
           <article
             key={kpi.id}
             className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
@@ -90,7 +97,7 @@ export default function AdminAnalytics() {
                   kpi.isPositive ? 'text-emerald-600' : 'text-rose-600'
                 }`}
               >
-                {kpi.isPositive ? '↑' : '↓'} {kpi.change}
+                {kpi.change}
               </span>
               <span className="text-slate-400 font-medium">{kpi.subtext}</span>
             </div>
@@ -121,7 +128,7 @@ export default function AdminAnalytics() {
 
         <div className="h-80 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={mockMonthlyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+            <AreaChart data={monthlyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -192,7 +199,7 @@ export default function AdminAnalytics() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={mockServiceShareData}
+                    data={serviceShareData}
                     cx="50%"
                     cy="50%"
                     innerRadius={55}
@@ -200,7 +207,7 @@ export default function AdminAnalytics() {
                     paddingAngle={3}
                     dataKey="value"
                   >
-                    {mockServiceShareData.map((entry) => (
+                    {serviceShareData.map((entry) => (
                       <Cell key={entry.name} fill={entry.color} />
                     ))}
                   </Pie>
@@ -219,7 +226,7 @@ export default function AdminAnalytics() {
 
             {/* Custom Legend details */}
             <div className="w-full md:w-1/2 space-y-2.5">
-              {mockServiceShareData.map((item) => (
+              {serviceShareData.map((item) => (
                 <div
                   key={item.name}
                   className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50/80"
@@ -256,7 +263,7 @@ export default function AdminAnalytics() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 layout="vertical"
-                data={mockTopDistrictsData}
+                data={topDistrictsData}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} />

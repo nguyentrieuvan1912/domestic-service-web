@@ -1,6 +1,9 @@
+import BookingIncidentsPanel from '../../components/admin/BookingIncidentsPanel'
+import { getAdminBookings, cancelAdminBooking } from '../../api/operations'
+import { useAdminResource } from '../../hooks/useAdminResource'
+import ResourceStatus from '../../components/admin/ResourceStatus'
 import { useState } from 'react'
 import type { Booking } from '../../data/mockAdminBookings'
-import { mockAdminBookings } from '../../data/mockAdminBookings'
 import BookingModal from '../../features/admin/bookings/BookingModal'
 import BookingTable from '../../features/admin/bookings/BookingTable'
 
@@ -15,7 +18,8 @@ const filterTabs: { id: FilterTab; label: string }[] = [
 
 export default function AdminBookings() {
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL')
-  const [bookings, setBookings] = useState<Booking[]>(mockAdminBookings)
+  const resource = useAdminResource(getAdminBookings, [] as Booking[])
+  const { data: bookings, setData: setBookings } = resource
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [search, setSearch] = useState('')
 
@@ -45,11 +49,10 @@ export default function AdminBookings() {
     return matchesTab && matchesSearch
   })
 
-  const handleUpdateBooking = (updated: Booking) => {
-    setBookings((prev) =>
-      prev.map((item) => (item.id === updated.id ? updated : item))
-    )
-    setSelectedBooking(updated)
+  const handleUpdateBooking = async (updated: Booking) => {
+    await cancelAdminBooking(updated)
+    const savedData = await getAdminBookings(); setBookings(savedData)
+    setSelectedBooking(savedData.find(item => item.id === updated.id) || null)
   }
 
   const getTabCount = (tabId: FilterTab): number => {
@@ -70,6 +73,8 @@ export default function AdminBookings() {
 
   return (
     <div className="space-y-8">
+      <BookingIncidentsPanel />
+      <ResourceStatus {...resource} />
       {/* Top Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>

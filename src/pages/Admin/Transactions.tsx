@@ -1,6 +1,9 @@
+import FinanceApprovalPanel from '../../components/admin/FinanceApprovalPanel'
+import { getAdminTransactions, saveTransactionNote } from '../../api/operations'
+import { useAdminResource } from '../../hooks/useAdminResource'
+import ResourceStatus from '../../components/admin/ResourceStatus'
 import { useState } from 'react'
 import type { Transaction } from '../../data/mockAdminTransactions'
-import { mockAdminTransactions } from '../../data/mockAdminTransactions'
 import TransactionModal from '../../features/admin/transactions/TransactionModal'
 import TransactionTable from '../../features/admin/transactions/TransactionTable'
 
@@ -14,7 +17,8 @@ const filterTabs: { id: FilterTab; label: string }[] = [
 
 export default function AdminTransactions() {
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL')
-  const [transactions, setTransactions] = useState<Transaction[]>(mockAdminTransactions)
+  const resource = useAdminResource(getAdminTransactions, [] as Transaction[])
+  const { data: transactions, setData: setTransactions } = resource
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const [search, setSearch] = useState('')
 
@@ -39,14 +43,12 @@ export default function AdminTransactions() {
     return matchesTab && matchesSearch
   })
 
-  const handleSaveTransaction = (updated: Transaction) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === updated.id ? updated : t))
-    )
+  const handleSaveTransaction = async (updated: Transaction) => {
+    await saveTransactionNote(updated)
+    const savedData = await getAdminTransactions(); setTransactions(savedData)
     setSelectedTransaction(null)
   }
 
-  // Summary Metrics
   const totalRevenue = transactions
     .filter((t) => t.type === 'PAYMENT' && t.status === 'SUCCESS')
     .reduce((sum, t) => sum + t.amount, 0)
@@ -69,6 +71,7 @@ export default function AdminTransactions() {
 
   return (
     <div className="space-y-8">
+      <ResourceStatus {...resource} />
       {/* Top Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
@@ -173,6 +176,7 @@ export default function AdminTransactions() {
       </section>
 
       {/* Detail Modal */}
+      <FinanceApprovalPanel />
       {selectedTransaction && (
         <TransactionModal
           transaction={selectedTransaction}

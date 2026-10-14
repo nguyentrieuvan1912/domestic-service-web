@@ -25,12 +25,17 @@ import AdminPromotions from './pages/Admin/Promotions'
 import AdminTransactions from './pages/Admin/Transactions'
 import AdminReviews from './pages/Admin/Reviews'
 import AdminAnalytics from './pages/Admin/Analytics'
+import CustomerAuth from './pages/Auth/CustomerAuth'
+import Account from './pages/Auth/Account'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<GuestLayout />}>
+          <Route path="/login" element={<CustomerAuth key="login" />} />
+          <Route path="/register" element={<CustomerAuth key="register" register />} />
+          <Route path="/account" element={<Account />} />
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />

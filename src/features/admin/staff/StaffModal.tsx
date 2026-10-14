@@ -1,14 +1,17 @@
+import { adminRequest } from '../../../api/operations'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import type { Service } from '../../../data/mockAdminServices'
 import type { Staff, StaffLevel, StaffStatus, StaffViolation } from '../../../data/mockAdminStaff'
-import { staffLevelFees, staffLevelLabels } from '../../../data/mockAdminStaff'
+import { staffLevelLabels } from '../../../data/mockAdminStaff'
 
 type StaffModalProps = {
+  period?: string
+  accountOnly?: boolean
   staff: Staff | null
   services: Service[]
   onClose: () => void
-  onSave: (staff: Staff) => void
+  onSave: (staff: Staff) => void | Promise<void>
 }
 
 type StaffTab = 'profile' | 'skills' | 'statistics' | 'violations'
@@ -44,7 +47,7 @@ const createDraft = (staff: Staff | null, services: Service[]): Staff =>
         status: 'ACTIVE',
         statusNote: '',
         rank: 'INTERN',
-        baseFee: staffLevelFees['INTERN'],
+        baseFee: null,
         joinDate: new Date().toLocaleDateString('vi-VN'),
         income: 0,
         averageRating: 5.0,
@@ -56,8 +59,9 @@ const createDraft = (staff: Staff | null, services: Service[]): Staff =>
         violations: [],
       }
 
-export default function StaffModal({
+export default function StaffModal({ period='CURRENT',
   staff,
+  accountOnly = false,
   services,
   onClose,
   onSave,
@@ -65,6 +69,8 @@ export default function StaffModal({
   const isNew = !staff
   const [draft, setDraft] = useState<Staff>(() => createDraft(staff, services))
   const [activeTab, setActiveTab] = useState<StaffTab>('profile')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   // Form states for new violation
   const [violationReason, setViolationReason] = useState('Hủy lịch phút chót')
@@ -100,7 +106,7 @@ export default function StaffModal({
     setDraft((prev) => ({
       ...prev,
       rank,
-      baseFee: staffLevelFees[rank],
+      baseFee: null,
     }))
   }
 
@@ -130,9 +136,11 @@ export default function StaffModal({
     setViolationPenalty('')
   }
 
-  const handleSave = (e: FormEvent) => {
+  const handleSave = async (e: FormEvent) => {
     e.preventDefault()
-    onSave(draft)
+    if (saving) return
+    setSaving(true); setError('')
+    try { await onSave(draft) } catch (cause) { setError(cause instanceof Error ? cause.message : 'Không thể lưu tài khoản.'); setSaving(false) }
   }
 
   return (
@@ -196,6 +204,8 @@ export default function StaffModal({
 
         {/* Form & Tab Content Body */}
         <form onSubmit={handleSave} className="flex min-h-0 flex-1 flex-col">
+          {error && <p role="alert" className="px-6 py-3 text-red-600">{error}</p>}
+          {accountOnly && activeTab !== 'profile' && <p className="px-6 py-6 text-slate-500">Dữ liệu này sẽ hiển thị khi kết nối nghiệp vụ Booking/Finance.</p>}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
             {/* TAB 1: Hồ sơ & Trạng thái */}
             {activeTab === 'profile' && (
@@ -231,6 +241,7 @@ export default function StaffModal({
                     <label className={labelClassName}>Số CCCD / Định danh</label>
                     <input
                       required
+                      readOnly={accountOnly}
                       value={draft.identityCard}
                       onChange={(e) => setDraft({ ...draft, identityCard: e.target.value })}
                       className={inputClassName}
@@ -263,7 +274,7 @@ export default function StaffModal({
                     <label className={labelClassName}>Mức phí cơ bản (Base Fee)</label>
                     <input
                       readOnly
-                      value={`${new Intl.NumberFormat('vi-VN').format(draft.baseFee)} VNĐ/giờ`}
+                      value={draft.baseFee == null ? 'Chưa cấu hình mức lương theo cấp bậc' : `${new Intl.NumberFormat('vi-VN').format(draft.baseFee)} VNĐ/giờ`}
                       className={`${inputClassName} bg-slate-50 font-semibold text-emerald-700`}
                     />
                   </div>
@@ -309,7 +320,7 @@ export default function StaffModal({
             )}
 
             {/* TAB 2: Kỹ năng & Khu vực */}
-            {activeTab === 'skills' && (
+            {!accountOnly && activeTab === 'skills' && (
               <section className="space-y-6">
                 <div>
                   <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
@@ -383,7 +394,7 @@ export default function StaffModal({
             )}
 
             {/* TAB 3: Thống kê */}
-            {activeTab === 'statistics' && (
+            {!accountOnly && activeTab === 'statistics' && (
               <section className="space-y-6">
                 <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
                   Chỉ số hiệu suất & Thu nhập
@@ -529,20 +540,11 @@ export default function StaffModal({
 
                     <button
                       type="button"
-                      onClick={() => {
-                        const totalBonus =
-                          (selectedBonuses.tripsBonus ? 500000 : 0) +
-                          (selectedBonuses.incomeBonus ? 1000000 : 0) +
-                          (selectedBonuses.ratingBonus ? 300000 : 0)
-
-                        setRewardSavedMessage(
-                          totalBonus > 0
-                            ? `✨ Đã ghi nhận thưởng ${new Intl.NumberFormat(
-                                'vi-VN'
-                              ).format(totalBonus)}đ!`
-                            : 'Đã cập nhật trạng thái thưởng'
-                        )
-                        setTimeout(() => setRewardSavedMessage(null), 3500)
+                      onClick={async () => {
+                        setSaving(true); setError('');
+                        try { await adminRequest('finance', '/admin/staff/' + draft.id + '/rewards', 'POST', {...selectedBonuses,period}); setRewardSavedMessage('Đã lưu đề xuất thưởng, chờ phê duyệt'); }
+                        catch (cause) { setError(cause instanceof Error ? cause.message : 'Chưa lưu được đề xuất thưởng.'); }
+                        finally { setSaving(false); }
                       }}
                       className="rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-600 active:scale-95 text-center"
                     >
@@ -554,7 +556,7 @@ export default function StaffModal({
             )}
 
             {/* TAB 4: Vi phạm & Kỷ luật */}
-            {activeTab === 'violations' && (
+            {!accountOnly && activeTab === 'violations' && (
               <section className="space-y-6">
                 {/* Form Ghi nhận vi phạm mới */}
                 <div className="rounded-xl border border-rose-200 bg-rose-50/30 p-4 shadow-sm">
@@ -648,6 +650,7 @@ export default function StaffModal({
             </button>
             <button
               type="submit"
+              disabled={saving || (accountOnly && activeTab !== 'profile')}
               className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
             >
               Lưu thay đổi

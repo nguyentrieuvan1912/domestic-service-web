@@ -1,4 +1,4 @@
-export type CustomerStatus = 'ACTIVE' | 'LOCKED'
+export type CustomerStatus = 'ACTIVE' | 'INACTIVE' | 'LOCKED'
 
 export interface CustomerBookingHistory {
   id: string
@@ -16,18 +16,20 @@ export interface Customer {
   address: string
   joinDate: string
   totalBookings: number
-  totalSpent: number
+  totalSpent: number | null
   status: CustomerStatus
   statusNote?: string
   recentBookings: CustomerBookingHistory[]
 }
 
 export const customerStatusLabels: Record<CustomerStatus, string> = {
+  INACTIVE: 'Chưa kích hoạt',
   ACTIVE: 'Hoạt động',
   LOCKED: 'Bị khóa',
 }
 
 export const customerStatusStyles: Record<CustomerStatus, string> = {
+  INACTIVE: 'bg-slate-50 text-slate-600 border-slate-200',
   ACTIVE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   LOCKED: 'bg-rose-50 text-rose-700 border-rose-200',
 }

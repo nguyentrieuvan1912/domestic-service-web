@@ -5,6 +5,7 @@ export type CandidateGender = 'Nam' | 'Nữ' | 'Khác'
 export type CandidateSource = 'Website' | 'Google Forms' | 'Zalo' | 'Walk-in'
 
 export interface Candidate {
+  staffId?: string
   id: string
   fullName: string
   phone: string

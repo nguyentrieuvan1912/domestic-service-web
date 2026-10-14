@@ -63,7 +63,7 @@ export default function CustomerTable({
 
               {/* Tổng chi tiêu */}
               <td className="px-4 py-3.5 font-extrabold text-emerald-700 whitespace-nowrap leading-tight">
-                {new Intl.NumberFormat('vi-VN').format(customer.totalSpent)}đ
+                {customer.totalSpent === null ? 'Chưa có dữ liệu' : `${new Intl.NumberFormat('vi-VN').format(customer.totalSpent)}đ`}
               </td>
 
               {/* Trạng thái */}

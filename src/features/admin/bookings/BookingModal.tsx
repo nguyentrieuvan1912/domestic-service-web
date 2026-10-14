@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Booking } from '../../../data/mockAdminBookings'
 import {
   bookingStatusLabels,
@@ -9,7 +10,7 @@ import {
 type BookingModalProps = {
   booking: Booking
   onClose: () => void
-  onUpdateBooking: (updated: Booking) => void
+  onUpdateBooking: (updated: Booking) => void | Promise<void>
 }
 
 export default function BookingModal({
@@ -17,7 +18,10 @@ export default function BookingModal({
   onClose,
   onUpdateBooking,
 }: BookingModalProps) {
-  const handleCancelBooking = () => {
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const handleCancelBooking = async () => {
+    if (saving) return
     if (
       window.confirm(
         `Bạn có chắc chắn muốn hủy đơn hàng ${booking.id} của khách hàng ${booking.customerName}?`
@@ -27,14 +31,16 @@ export default function BookingModal({
         ...booking,
         status: 'CANCELLED',
         cancelReason: 'Đơn bị hủy trực tiếp bởi Quản trị viên hệ thống',
-        paymentStatus: booking.paymentStatus === 'PAID' ? 'REFUNDED' : booking.paymentStatus,
+        paymentStatus: booking.paymentStatus,
       }
-      onUpdateBooking(updated)
+      setSaving(true); setError('')
+      try { await onUpdateBooking(updated) } catch (cause) { setError(cause instanceof Error ? cause.message : 'Chưa hủy được đơn.') } finally { setSaving(false) }
     }
   }
 
   return (
     <>
+      {error && <p role="alert" className="fixed bottom-6 right-6 z-[60] rounded-lg bg-white p-4 text-red-600 shadow">{error}</p>}
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm transition-opacity"

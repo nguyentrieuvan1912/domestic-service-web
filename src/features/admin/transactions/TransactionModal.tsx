@@ -12,7 +12,7 @@ import {
 type TransactionModalProps = {
   transaction: Transaction
   onClose: () => void
-  onSaveTransaction: (updated: Transaction) => void
+  onSaveTransaction: (updated: Transaction) => void | Promise<void>
 }
 
 const inputClassName =
@@ -25,10 +25,14 @@ export default function TransactionModal({
   onSaveTransaction,
 }: TransactionModalProps) {
   const [draft, setDraft] = useState<Transaction>(() => ({ ...transaction }))
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    onSaveTransaction(draft)
+    if (saving) return
+    setSaving(true); setError('')
+    try { await onSaveTransaction(draft) } catch (cause) { setError(cause instanceof Error ? cause.message : 'Chưa lưu được dữ liệu.') } finally { setSaving(false) }
   }
 
   return (
@@ -79,6 +83,7 @@ export default function TransactionModal({
 
         {/* Content Body Form */}
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          {error && <p role="alert" className="px-6 py-3 text-sm text-red-600">{error}</p>}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 bg-slate-50/50">
             {/* KHỐI 1: Tổng quan giao dịch */}
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
@@ -177,7 +182,7 @@ export default function TransactionModal({
 
               <div>
                 <label className={labelClassName}>Trạng thái xử lý giao dịch</label>
-                <select
+                <select disabled
                   value={draft.status}
                   onChange={(e) =>
                     setDraft({ ...draft, status: e.target.value as TransactionStatus })
@@ -202,6 +207,7 @@ export default function TransactionModal({
               Hủy bỏ
             </button>
             <button
+              disabled={saving}
               type="submit"
               className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
             >

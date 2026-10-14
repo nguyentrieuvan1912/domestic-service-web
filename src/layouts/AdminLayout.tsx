@@ -18,14 +18,14 @@ export default function AdminLayout() {
   const navigate = useNavigate()
   const { logout } = useAdminAuth()
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    try { await logout() } catch { /* Browser session is cleared even when the server is unavailable. */ }
     navigate('/admin/login', { replace: true })
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-100 text-slate-900">
-      <aside className="flex h-full w-full shrink-0 flex-col bg-slate-950 text-slate-300 lg:w-56">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-100 text-slate-900 lg:flex-row">
+      <aside className="flex w-full shrink-0 flex-col bg-slate-950 text-slate-300 lg:h-full lg:w-56">
         <div className="flex items-center gap-3 border-b border-slate-800 px-6 py-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400 font-bold text-slate-950">C</div>
           <div>
@@ -51,7 +51,7 @@ export default function AdminLayout() {
         </nav>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex min-h-16 items-center justify-between border-b border-slate-200 bg-white px-6 py-3.5 shadow-sm lg:px-8">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Cổng quản trị</p>

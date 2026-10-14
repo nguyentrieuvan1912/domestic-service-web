@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Customer, CustomerStatus } from '../../data/mockAdminCustomers'
-import { mockAdminCustomers } from '../../data/mockAdminCustomers'
+import { getCustomers, saveCustomerStatus } from '../../api/identity'
 import CustomerModal from '../../features/admin/customers/CustomerModal'
 import CustomerTable from '../../features/admin/customers/CustomerTable'
 
@@ -9,14 +9,23 @@ type FilterTab = 'ALL' | CustomerStatus
 const filterTabs: { id: FilterTab; label: string }[] = [
   { id: 'ALL', label: 'Tất cả khách hàng' },
   { id: 'ACTIVE', label: 'Đang hoạt động' },
+  { id: 'INACTIVE', label: 'Chưa kích hoạt' },
   { id: 'LOCKED', label: 'Bị khóa / Hạn chế' },
 ]
 
 export default function AdminCustomers() {
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL')
-  const [customers, setCustomers] = useState<Customer[]>(mockAdminCustomers)
+  const [customers, setCustomers] = useState<Customer[]>([])
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [search, setSearch] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [attempt, setAttempt] = useState(0)
+  useEffect(() => {
+    let active = true
+    void getCustomers().then(data => { if (active) { setCustomers(data); setError('') } }).catch(cause => { if (active) setError(cause.message) }).finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [attempt])
 
   const filteredCustomers = customers.filter((customer) => {
     // Tab filter logic
@@ -33,7 +42,8 @@ export default function AdminCustomers() {
     return matchesTab && matchesSearch
   })
 
-  const handleSaveCustomer = (updated: Customer) => {
+  const handleSaveCustomer = async (updated: Customer) => {
+    await saveCustomerStatus(updated)
     setCustomers((prev) =>
       prev.map((item) => (item.id === updated.id ? updated : item))
     )
@@ -47,6 +57,9 @@ export default function AdminCustomers() {
 
   return (
     <div className="space-y-8">
+      {loading && <p role="status">Đang tải khách hàng...</p>}
+      {error && <div role="alert" className="text-red-600">{error} <button onClick={() => { setLoading(true); setAttempt(value => value + 1) }} className="underline">Thử lại</button></div>}
+      <p className="text-sm text-slate-500">Chi tiêu và lịch sử đặt dịch vụ sẽ hiển thị khi API Booking/Finance được kết nối.</p>
       {/* Top Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>

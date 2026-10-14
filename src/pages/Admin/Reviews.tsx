@@ -1,6 +1,10 @@
+import CommunityModerationPanel from '../../components/admin/CommunityModerationPanel'
+import SupportRequestsPanel from '../../components/admin/SupportRequestsPanel'
+import { getAdminReviews, saveAdminReview } from '../../api/operations'
+import { useAdminResource } from '../../hooks/useAdminResource'
+import ResourceStatus from '../../components/admin/ResourceStatus'
 import { useState } from 'react'
 import type { Review } from '../../data/mockAdminReviews'
-import { mockAdminReviews } from '../../data/mockAdminReviews'
 import ReviewModal from '../../features/admin/reviews/ReviewModal'
 import ReviewTable from '../../features/admin/reviews/ReviewTable'
 
@@ -15,7 +19,8 @@ const filterTabs: { id: FilterTab; label: string }[] = [
 
 export default function AdminReviews() {
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL')
-  const [reviews, setReviews] = useState<Review[]>(mockAdminReviews)
+  const resource = useAdminResource(getAdminReviews, [] as Review[])
+  const { data: reviews, setData: setReviews } = resource
   const [selectedReview, setSelectedReview] = useState<Review | null>(null)
   const [search, setSearch] = useState('')
 
@@ -42,10 +47,9 @@ export default function AdminReviews() {
     return matchesTab && matchesSearch
   })
 
-  const handleSaveReview = (updated: Review) => {
-    setReviews((prev) =>
-      prev.map((item) => (item.id === updated.id ? updated : item))
-    )
+  const handleSaveReview = async (updated: Review) => {
+    await saveAdminReview(updated)
+    const savedData = await getAdminReviews(); setReviews(savedData)
     setSelectedReview(null)
   }
 
@@ -62,6 +66,9 @@ export default function AdminReviews() {
 
   return (
     <div className="space-y-8">
+      <SupportRequestsPanel />
+      <CommunityModerationPanel />
+      <ResourceStatus {...resource} />
       {/* Top Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>

@@ -3,6 +3,7 @@ import type { Staff, StaffLevel } from '../../../data/mockAdminStaff'
 import { staffLevelLabels } from '../../../data/mockAdminStaff'
 
 type StaffTableProps = {
+  accountOnly?: boolean
   staff: Staff[]
   services?: Service[]
   onEdit: (staff: Staff) => void
@@ -14,7 +15,7 @@ const rankStyles: Record<StaffLevel, string> = {
   PROFESSIONAL: 'bg-purple-50 text-purple-700 border-purple-200',
 }
 
-export default function StaffTable({ staff, onEdit }: StaffTableProps) {
+export default function StaffTable({ staff, onEdit, accountOnly = false }: StaffTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">
@@ -30,7 +31,7 @@ export default function StaffTable({ staff, onEdit }: StaffTableProps) {
         </thead>
         <tbody className="divide-y divide-slate-100">
           {staff.map((member) => {
-            const isTopStaff = member.income > 20000000 || member.averageRating >= 4.9
+            const isTopStaff = !accountOnly && (member.income > 20000000 || member.averageRating >= 4.9)
 
             return (
               <tr key={member.id} className="transition hover:bg-slate-50/80">
@@ -80,10 +81,10 @@ export default function StaffTable({ staff, onEdit }: StaffTableProps) {
                   </div>
                 </td>
                 <td className="px-4 py-3.5 font-medium text-slate-700 whitespace-nowrap leading-tight">
-                  {member.totalTrips} chuyến
+                  {accountOnly ? 'Chưa có dữ liệu' : `${member.totalTrips} chuyến`}
                 </td>
                 <td className="px-4 py-3.5 font-bold text-emerald-700 whitespace-nowrap leading-tight">
-                  {new Intl.NumberFormat('vi-VN').format(member.income)}đ
+                  {accountOnly ? 'Chưa có dữ liệu' : `${new Intl.NumberFormat('vi-VN').format(member.income)}đ`}
                 </td>
                 <td className="px-4 py-3.5 text-right whitespace-nowrap w-24">
                   <button

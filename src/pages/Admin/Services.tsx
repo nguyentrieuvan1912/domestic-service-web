@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { AddOn, Category, Service, ServicePackage } from '../../data/mockAdminServices'
-import { mockAddOns, mockAdminServices, mockCategories, mockServicePackages } from '../../data/mockAdminServices'
+import { getAdminCatalog, saveCatalogItem as persistCatalog } from '../../api/operations'
+import { useAdminResource } from '../../hooks/useAdminResource'
+import ResourceStatus from '../../components/admin/ResourceStatus'
 import CatalogItemModal from '../../features/admin/services/CatalogItemModal'
 import ServiceModal from '../../features/admin/services/ServiceModal'
 import ServiceTable from '../../features/admin/services/ServiceTable'
@@ -20,13 +22,17 @@ const formatPrice = (price: number) => `${new Intl.NumberFormat('vi-VN').format(
 
 export default function AdminServices() {
   const [activeTab, setActiveTab] = useState<ServiceTab>('services')
-  const [services, setServices] = useState<Service[]>(mockAdminServices)
-  const [categories, setCategories] = useState<Category[]>(mockCategories)
-  const [packages, setPackages] = useState<ServicePackage[]>(mockServicePackages)
-  const [addOns, setAddOns] = useState<AddOn[]>(mockAddOns)
+  const [services, setServices] = useState<Service[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [packages, setPackages] = useState<ServicePackage[]>([])
+  const [addOns, setAddOns] = useState<AddOn[]>([])
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [catalogMode, setCatalogMode] = useState<CatalogMode | null>(null)
   const [editingCatalogItem, setEditingCatalogItem] = useState<CatalogItem | null>(null)
+
+  const resource = useAdminResource(getAdminCatalog, { categories: [], services: [], packages: [], addOns: [] })
+  const applyCatalog = (data: Awaited<ReturnType<typeof getAdminCatalog>>) => { setCategories(data.categories); setServices(data.services); setPackages(data.packages); setAddOns(data.addOns) }
+  useEffect(() => { applyCatalog(resource.data) }, [resource.data])
 
   const packageCounts = Object.fromEntries(
     packages.map((item) => [item.serviceId, packages.filter((entry) => entry.serviceId === item.serviceId).length])
@@ -40,34 +46,17 @@ export default function AdminServices() {
     setEditingCatalogItem(item)
   }
 
-  const saveCatalogItem = (item: CatalogItem) => {
-    if (catalogMode === 'category')
-      setCategories((current) =>
-        current.some((entry) => entry.id === item.id)
-          ? current.map((entry) => (entry.id === item.id ? (item as Category) : entry))
-          : [...current, item as Category]
-      )
-    if (catalogMode === 'package')
-      setPackages((current) =>
-        current.some((entry) => entry.id === item.id)
-          ? current.map((entry) => (entry.id === item.id ? (item as ServicePackage) : entry))
-          : [...current, item as ServicePackage]
-      )
-    if (catalogMode === 'addon')
-      setAddOns((current) =>
-        current.some((entry) => entry.id === item.id)
-          ? current.map((entry) => (entry.id === item.id ? (item as AddOn) : entry))
-          : [...current, item as AddOn]
-      )
-    setCatalogMode(null)
-    setEditingCatalogItem(null)
+  const saveCatalogItem = async (item: CatalogItem) => {
+    if (!catalogMode) return
+    await persistCatalog(catalogMode === 'category' ? 'categories' : catalogMode === 'package' ? 'packages' : 'addons', item)
+    applyCatalog(await getAdminCatalog()); setCatalogMode(null); setEditingCatalogItem(null)
   }
-
-  const saveService = (service: Service) => setServices((current) => current.some((item) => item.id === service.id) ? current.map((item) => item.id === service.id ? service : item) : [...current, service])
+  const saveService = async (service: Service) => { await persistCatalog('services', service); applyCatalog(await getAdminCatalog()); setEditingService(null) }
   const openNewService = () => setEditingService({ id: `service-${Date.now()}`, name: '', description: '', categoryId: categories[0]?.id ?? '', categoryName: categories[0]?.name ?? '', icon: 'DV', isActive: true, dynamicFields: [] })
 
   return (
     <div className="space-y-8">
+      <ResourceStatus {...resource} />
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="text-sm font-medium text-emerald-600">Danh mục dịch vụ</p><h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-950">Quản lý dịch vụ</h1><p className="mt-2 text-sm text-slate-500">Quản lý danh mục, dịch vụ, gói và dịch vụ bổ sung trên nền tảng.</p></div><button type="button" onClick={openNewService} className="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"> Thêm dịch vụ mới</button></div>
       <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex gap-1 overflow-x-auto border-b border-slate-200 px-4 pt-3 sm:px-6">{tabs.map((tab) => <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)} className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition ${activeTab === tab.id ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-900'}`}>{tab.label}<span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{tab.id === 'categories' ? categories.length : tab.id === 'services' ? services.length : tab.id === 'packages' ? packages.length : addOns.length}</span></button>)}</div>
@@ -76,7 +65,7 @@ export default function AdminServices() {
         {activeTab === 'packages' && <CatalogTable title="gói dịch vụ" items={packages} services={services} onAdd={() => openCatalogModal('package')} onEdit={(item) => openCatalogModal('package', item)} formatPrice={formatPrice} />}
         {activeTab === 'addons' && <CatalogTable title="dịch vụ bổ sung" items={addOns} services={services} onAdd={() => openCatalogModal('addon')} onEdit={(item) => openCatalogModal('addon', item)} formatPrice={formatPrice} />}
       </section>
-      {editingService && <ServiceModal key={editingService.id} service={editingService.name ? editingService : null} categories={categories} onClose={() => setEditingService(null)} onSave={(service) => { saveService(service); setEditingService(null) }} />}
+      {editingService && <ServiceModal key={editingService.id} service={editingService.name ? editingService : null} categories={categories} onClose={() => setEditingService(null)} onSave={saveService} />}
       {catalogMode && <CatalogItemModal mode={catalogMode} item={editingCatalogItem} services={services} onClose={() => { setCatalogMode(null); setEditingCatalogItem(null) }} onSave={saveCatalogItem} />}
     </div>
   )

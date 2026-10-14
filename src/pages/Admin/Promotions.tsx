@@ -1,6 +1,8 @@
+import { getAdminPromotions, saveAdminPromotion } from '../../api/operations'
+import { useAdminResource } from '../../hooks/useAdminResource'
+import ResourceStatus from '../../components/admin/ResourceStatus'
 import { useState } from 'react'
 import type { Promotion } from '../../data/mockAdminPromotions'
-import { mockAdminPromotions } from '../../data/mockAdminPromotions'
 import PromotionModal from '../../features/admin/promotions/PromotionModal'
 import PromotionTable from '../../features/admin/promotions/PromotionTable'
 
@@ -15,7 +17,8 @@ const filterTabs: { id: FilterTab; label: string }[] = [
 
 export default function AdminPromotions() {
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL')
-  const [promotions, setPromotions] = useState<Promotion[]>(mockAdminPromotions)
+  const resource = useAdminResource(getAdminPromotions, [] as Promotion[])
+  const { data: promotions, setData: setPromotions } = resource
   const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -41,14 +44,10 @@ export default function AdminPromotions() {
     return matchesTab && matchesSearch
   })
 
-  const handleSavePromotion = (saved: Promotion) => {
-    setPromotions((prev) =>
-      prev.some((p) => p.id === saved.id)
-        ? prev.map((p) => (p.id === saved.id ? saved : p))
-        : [saved, ...prev]
-    )
-    setIsModalOpen(false)
-    setEditingPromotion(null)
+  const handleSavePromotion = async (saved: Promotion) => {
+    await saveAdminPromotion(saved)
+    const savedData = await getAdminPromotions(); setPromotions(savedData)
+    setIsModalOpen(false); setEditingPromotion(null)
   }
 
   const handleOpenNewModal = () => {
@@ -74,6 +73,7 @@ export default function AdminPromotions() {
 
   return (
     <div className="space-y-8">
+      <ResourceStatus {...resource} />
       {/* Top Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>

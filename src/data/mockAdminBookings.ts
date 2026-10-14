@@ -13,6 +13,7 @@ export interface BookingDetailItem {
 }
 
 export interface Booking {
+  district?: string
   id: string
   customerName: string
   customerPhone: string

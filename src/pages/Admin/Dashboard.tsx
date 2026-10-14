@@ -1,10 +1,9 @@
 import { Link as RouterLink } from 'react-router-dom'
-import {
-  mockDashboardKpis,
-  mockRecentBookings,
-  mockTopStaff,
-} from '../../data/mockAdminDashboard'
+import { getOverview, emptyOverview, overviewKpis, overviewYear } from '../../api/overview'
+import { exportCsv } from '../../api/operations'
+import { useAdminResource } from '../../hooks/useAdminResource'
 
+const loadDashboard = () => getOverview('month')
 const bookingStatusStyles: Record<string, string> = {
   SEARCHING: 'bg-amber-50 text-amber-700 border-amber-200',
   MATCHED: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -14,12 +13,19 @@ const bookingStatusStyles: Record<string, string> = {
 }
 
 export default function AdminDashboard() {
+  const resource = useAdminResource(loadDashboard, emptyOverview)
+  const data = resource.data
+  const kpis = overviewKpis(data, [new Date().getMonth() + 1])
+  const recentBookings = data.bookings.slice(0, 5).map(b => ({ id: b.id, customerName: b.customerName, serviceName: b.serviceName, amount: b.totalAmount, status: b.status, statusLabel: b.status, time: b.createdAt }))
+  const topStaff = [...data.staff].sort((a,b) => b.completedBookings - a.completedBookings).slice(0,5).map(s => ({ id: s.id, name: s.fullName, phone: s.phone, specialty: s.rank, rating: s.averageRating, totalTrips: s.completedBookings, rank: s.rank }))
   const handleExportReport = () => {
-    alert('Hệ thống đang xuất file báo cáo tổng quan vận hành tháng 09/2026 (Format .xlsx)...')
+    exportCsv('bao-cao-'+overviewYear+'.csv', [['Tháng','Doanh thu đã xác nhận','Chuyển tiền Staff đã xác nhận','Phí đã quyết toán'], ...data.monthly.map(m => [m.month,m.revenue,m.payout,m.platformFee])])
   }
 
   return (
     <div className="space-y-8">
+      {resource.loading && <p role="status">Đang tải báo cáo...</p>}
+      {resource.error && <p role="alert">{resource.error} <button onClick={resource.retry}>Thử lại</button></p>}
       {/* 1. Header & Greeting Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
@@ -32,7 +38,7 @@ export default function AdminDashboard() {
           <p className="mt-1.5 text-xs font-medium text-slate-500 flex items-center gap-2">
             <span>📅 Báo cáo vận hành hệ thống CleanMaster</span>
             <span>•</span>
-            <span className="text-slate-700 font-semibold">Thứ Tư, 16/09/2026</span>
+            <span className="text-slate-700 font-semibold">{new Date().toLocaleDateString('vi-VN')}</span>
           </p>
         </div>
         <div>
@@ -48,7 +54,7 @@ export default function AdminDashboard() {
 
       {/* 2. KPI Cards Grid (4 columns) */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {mockDashboardKpis.map((kpi) => (
+        {kpis.map((kpi) => (
           <article
             key={kpi.id}
             className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
@@ -65,7 +71,7 @@ export default function AdminDashboard() {
                   kpi.isPositive ? 'text-emerald-600' : 'text-rose-600'
                 }`}
               >
-                {kpi.isPositive ? '↑' : '↓'} {kpi.change}
+                {kpi.change}
               </span>
               <span className="text-slate-400 font-medium">{kpi.subtext}</span>
             </div>
@@ -107,7 +113,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {mockRecentBookings.map((booking) => (
+                  {recentBookings.map((booking) => (
                     <tr key={booking.id} className="transition hover:bg-slate-50/80">
                       <td className="px-4 py-3.5 font-extrabold text-slate-800 font-mono text-xs whitespace-nowrap">
                         {booking.id}
@@ -139,7 +145,7 @@ export default function AdminDashboard() {
 
           <div className="border-t border-slate-100 px-5 py-3 bg-slate-50/50 rounded-b-xl">
             <p className="text-xs text-slate-500 font-medium text-right">
-              Hệ thống tự động cập nhật dữ liệu thời gian thực (Real-time update)
+              Dữ liệu được đọc từ Booking và Finance khi mở báo cáo
             </p>
           </div>
         </section>
@@ -153,7 +159,7 @@ export default function AdminDashboard() {
                   <span>⭐</span> Nhân viên xuất sắc
                 </h2>
                 <p className="mt-0.5 text-xs text-slate-500 font-medium">
-                  Xếp hạng hiệu suất làm việc tháng này
+                  Xếp hạng theo số đơn hoàn tất
                 </p>
               </div>
               <RouterLink
@@ -165,7 +171,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="divide-y divide-slate-100 p-2">
-              {mockTopStaff.map((staff) => (
+              {topStaff.map((staff) => (
                 <div
                   key={staff.id}
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 transition"
