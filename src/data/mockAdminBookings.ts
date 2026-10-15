@@ -1,4 +1,5 @@
 export type BookingStatus =
+  | 'WAITING_STAFF'
   | 'SEARCHING'
   | 'MATCHED'
   | 'IN_PROGRESS'
@@ -36,10 +37,14 @@ export interface Booking {
   paymentStatus: 'PAID' | 'UNPAID' | 'REFUNDED'
   dynamicDetails: Record<string, string>
   createdAt: string
+  staffResponseDeadline?: string
+  staffWaitState?: string
+  staffWaitRound?: number
   cancelReason?: string
 }
 
 export const bookingStatusLabels: Record<BookingStatus, string> = {
+  WAITING_STAFF: 'Chờ nhân viên nhận',
   SEARCHING: 'Đang tìm Staff',
   MATCHED: 'Đã có Staff',
   IN_PROGRESS: 'Đang thực hiện',
@@ -48,6 +53,7 @@ export const bookingStatusLabels: Record<BookingStatus, string> = {
 }
 
 export const bookingStatusStyles: Record<BookingStatus, string> = {
+  WAITING_STAFF: 'bg-amber-50 text-amber-700 border-amber-200',
   SEARCHING: 'bg-amber-50 text-amber-700 border-amber-200',
   MATCHED: 'bg-blue-50 text-blue-700 border-blue-200',
   IN_PROGRESS: 'bg-indigo-50 text-indigo-700 border-indigo-200',

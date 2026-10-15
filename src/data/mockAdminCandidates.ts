@@ -12,6 +12,8 @@ export interface Candidate {
   email: string
   cccd: string
   birthYear: number
+  dateOfBirth?: string
+  experienceYears?: number
   gender: CandidateGender
   area: string
   source: CandidateSource

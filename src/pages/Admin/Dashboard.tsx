@@ -5,6 +5,7 @@ import { useAdminResource } from '../../hooks/useAdminResource'
 
 const loadDashboard = () => getOverview('month')
 const bookingStatusStyles: Record<string, string> = {
+  WAITING_STAFF: 'bg-amber-50 text-amber-700 border-amber-200',
   SEARCHING: 'bg-amber-50 text-amber-700 border-amber-200',
   MATCHED: 'bg-blue-50 text-blue-700 border-blue-200',
   IN_PROGRESS: 'bg-indigo-50 text-indigo-700 border-indigo-200',

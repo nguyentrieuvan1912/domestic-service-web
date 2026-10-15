@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { dateTime, getAdminBookingHistory, type BookingHistoryEntry } from '../../../api/operations'
+import { useEffect, useState } from 'react'
 import type { Booking } from '../../../data/mockAdminBookings'
 import {
   bookingStatusLabels,
@@ -20,6 +21,14 @@ export default function BookingModal({
 }: BookingModalProps) {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [history, setHistory] = useState<BookingHistoryEntry[]>([])
+  const [historyError, setHistoryError] = useState('')
+  useEffect(() => {
+    let active = true; setHistory([]); setHistoryError('')
+    getAdminBookingHistory(booking.id).then(items => { if(active) setHistory(items) }).catch(cause => { if(active) setHistoryError(cause instanceof Error ? cause.message : 'Chưa tải được lịch sử đơn.') })
+    return () => { active = false }
+  }, [booking.id, booking.status, booking.staffWaitRound])
+
   const handleCancelBooking = async () => {
     if (saving) return
     if (
@@ -159,6 +168,11 @@ export default function BookingModal({
               </span>
             </div>
 
+            {booking.status === 'WAITING_STAFF' && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+              <p className="font-semibold">Đang chờ {booking.staffName || 'nhân viên khách đã chọn'} xác nhận</p>
+              {booking.staffResponseDeadline && <p>Hạn phản hồi: {dateTime(booking.staffResponseDeadline)}</p>}
+              <p>Lượt chờ: {booking.staffWaitRound || 1} • 3 phút/lượt</p>
+            </div>}
             {/* Staff info based on status */}
             {booking.status === 'SEARCHING' && (
               <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-4 text-center">
@@ -206,6 +220,15 @@ export default function BookingModal({
             )}
           </div>
 
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+            <h3 className="text-sm font-bold uppercase text-slate-900">Lịch sử trạng thái đơn</h3>
+            {historyError && <p role="alert" className="text-sm text-red-600">{historyError}</p>}
+            {!historyError && history.length === 0 && <p className="text-sm text-slate-500">Đang tải lịch sử...</p>}
+            {history.map(event => <div key={event.id} className="border-l-2 border-emerald-200 pl-3 text-sm">
+              <p className="text-xs text-slate-500">{dateTime(event.timestamp)} • {event.changedBy === 'SYSTEM' ? 'Hệ thống' : event.changedBy === 'CUSTOMER' ? 'Khách hàng' : event.changedBy === 'STAFF' ? 'Nhân viên' : 'Quản trị viên'}</p>
+              <p className="text-slate-800">{event.description}</p>
+            </div>)}
+          </div>
           {/* CARD 3: Tóm tắt Thanh toán */}
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-2 flex items-center justify-between">

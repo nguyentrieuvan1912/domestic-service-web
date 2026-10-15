@@ -223,15 +223,14 @@ export default function PromotionModal({
               <div>
                 <label className={labelClassName}>Lượt dùng tối đa</label>
                 <input
-                  required
                   type="number"
                   min={1}
-                  value={draft.usageLimit}
+                  value={draft.usageLimit ?? ''}
                   onChange={(e) =>
-                    setDraft({ ...draft, usageLimit: Number(e.target.value) })
+                    setDraft({ ...draft, usageLimit: e.target.value === '' ? null : Number(e.target.value) })
                   }
                   className={inputClassName}
-                  placeholder="VD: 500"
+                  placeholder="Để trống nếu không giới hạn"
                 />
               </div>
 

@@ -59,9 +59,9 @@ export const createCandidate = async (candidate: Candidate) => candidateView(awa
 export const advanceCandidate = async (candidate: Candidate) => candidateView(await identityRequest<CandidateResponse>(`/admin/candidates/${candidate.id}`, { method: 'PATCH', body: JSON.stringify(candidate) }, 'ADMIN'))
 export const provisionStaff = async (id: string, password: string, rank: string) => candidateView(await identityRequest<CandidateResponse>(`/admin/candidates/${id}/staff-account`, { method: 'POST', body: JSON.stringify({ password, rank }) }, 'ADMIN'))
 export async function getStaff(): Promise<Staff[]> {
-  const items = await identityRequest<(Pick<Staff, 'fullName' | 'phone' | 'identityCard' | 'rank' | 'joinDate' | 'averageRating' | 'statusNote'> & { id: number; status: string })[]>('/admin/staff', {}, 'ADMIN')
+  const items = await identityRequest<(Pick<Staff, 'fullName' | 'phone' | 'identityCard' | 'rank' | 'joinDate' | 'averageRating' | 'statusNote' | 'dateOfBirth' | 'birthYear' | 'gender' | 'experienceYears' | 'bio' | 'avatar' | 'email'> & { id: number; status: string })[]>('/admin/staff', {}, 'ADMIN')
   return items.map(item => ({ ...item, id: String(item.id), identityCard: item.identityCard || '', status: item.status === 'BLOCKED' ? 'LOCKED' : item.status as Staff['status'],
     joinDate: date(item.joinDate), baseFee: null,
     income: 0, totalTrips: 0, completedBookings: 0, cancelledBookings: 0, skillIds: [], areaIds: [], violations: [] }))
 }
-export const saveStaffAccount = (staff: Staff) => identityRequest<void>(`/admin/staff/${staff.id}`, { method: 'PATCH', body: JSON.stringify({ fullName: staff.fullName, phone: staff.phone, status: staff.status, statusNote: staff.statusNote, rank: staff.rank }) }, 'ADMIN')
+export const saveStaffAccount = (staff: Staff) => identityRequest<void>(`/admin/staff/${staff.id}`, { method: 'PATCH', body: JSON.stringify({ fullName: staff.fullName, phone: staff.phone, status: staff.status, statusNote: staff.statusNote, rank: staff.rank, dateOfBirth: staff.dateOfBirth || undefined, birthYear: staff.birthYear, gender: staff.gender, experienceYears: staff.experienceYears, bio: staff.bio }) }, 'ADMIN')

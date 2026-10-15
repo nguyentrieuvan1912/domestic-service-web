@@ -46,17 +46,18 @@ export interface BackendBooking {
   id: number; bookingCode: string; customerId: number; serviceId: number; status: string; mode: string;
   startsAt: string; endsAt: string; createdAt: string; packagePrice: number; addOnsTotal: number; totalAmount: number; discountAmount: number;
   service: { configuration?: Record<string,unknown>; configurationLabels?:Record<string,string>; answerLabels?: Record<string,string>; name?: string; serviceName?: string; answers?: Record<string, unknown> }; address: { recipientName?: string; recipientPhone?: string; receiverName?: string; receiverPhone?: string; fullAddress?: string; detailAddress?: string; district?: string; ward?: string };
+  staffResponseDeadline?: string; staffWaitState?: string; staffWaitRound?: number;
   assignments: { staffId: number; status: string }[]; paymentStatus: string; paymentMethod: string; cancellationReason?: string;
 }
-export const bookingStatus = (status: string): Booking['status'] => status === 'IN_PROGRESS' ? 'IN_PROGRESS' : status === 'COMPLETED' ? 'COMPLETED' : ['CANCELLED', 'REFUNDING', 'REFUNDED', 'ABSENT', 'REJECTED', 'NO_STAFF_FOUND'].includes(status) ? 'CANCELLED' : ['CONFIRMED', 'ACCEPTED', 'STAFF_ASSIGNED'].includes(status) ? 'MATCHED' : 'SEARCHING'
+export const bookingStatus = (status: string): Booking['status'] => status === 'STAFF_ASSIGNED' ? 'WAITING_STAFF' : status === 'IN_PROGRESS' ? 'IN_PROGRESS' : status === 'COMPLETED' ? 'COMPLETED' : ['CANCELLED', 'REFUNDING', 'REFUNDED', 'ABSENT', 'REJECTED', 'NO_STAFF_FOUND'].includes(status) ? 'CANCELLED' : ['CONFIRMED', 'ACCEPTED'].includes(status) ? 'MATCHED' : 'SEARCHING'
 export const dateTime = (date: string) => new Date(date).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
 export async function getAdminBookings(): Promise<Booking[]> {
   const [records, people] = await Promise.all([adminRequest<BackendBooking[]>('booking', '/bookings'), getStaff()])
   return records.map(x => {
-    const assigned = x.assignments.find(a => ['ACCEPTED', 'COMPLETED'].includes(a.status)); const staff = people.find(s => s.id === String(assigned?.staffId))
+    const assigned = x.assignments.find(a => ['ACCEPTED', 'COMPLETED'].includes(a.status)) || (x.mode === 'MODE_A' ? x.assignments.at(-1) : undefined); const staff = people.find(s => s.id === String(assigned?.staffId))
     return { id: String(x.id), bookingCode: x.bookingCode, customerName: x.address.recipientName || x.address.receiverName || '', customerPhone: x.address.recipientPhone || x.address.receiverPhone || '', address: x.address.fullAddress || x.address.detailAddress || '', district: x.address.district || x.address.ward || '', serviceId: String(x.serviceId), serviceName: x.service.name || x.service.serviceName || '',
       bookingDate: new Date(x.startsAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}), bookingTime: `${new Date(x.startsAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone:'Asia/Ho_Chi_Minh' })} - ${new Date(x.endsAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`, status: bookingStatus(x.status), rawStatus: x.status, dispatchMode: x.mode === 'MODE_A' ? 'MANUAL' : 'AUTO',
-      staffId: staff?.id, staffName: staff?.fullName, staffPhone: staff?.phone, subtotal: x.packagePrice + x.addOnsTotal, platformFee: 0, discount: x.discountAmount, totalAmount: x.totalAmount, paymentMethod: x.paymentMethod, paymentStatus: x.paymentStatus === 'PAID' ? 'PAID' : x.paymentStatus === 'REFUNDED' ? 'REFUNDED' : 'UNPAID', dynamicDetails: Object.fromEntries(Object.entries({...x.service.answers,...x.service.configuration}).map(([key, value]) => [x.service.answerLabels?.[key] || x.service.configurationLabels?.[key] || key, String(value)])), createdAt: dateTime(x.createdAt), cancelReason: x.cancellationReason }
+      staffId: staff?.id, staffName: staff?.fullName, staffPhone: staff?.phone, subtotal: x.packagePrice + x.addOnsTotal, platformFee: 0, discount: x.discountAmount, totalAmount: x.totalAmount, paymentMethod: x.paymentMethod, paymentStatus: x.paymentStatus === 'PAID' ? 'PAID' : x.paymentStatus === 'REFUNDED' ? 'REFUNDED' : 'UNPAID', dynamicDetails: Object.fromEntries(Object.entries({...x.service.answers,...x.service.configuration}).map(([key, value]) => [x.service.answerLabels?.[key] || x.service.configurationLabels?.[key] || key, String(value)])), createdAt: dateTime(x.createdAt), staffResponseDeadline: x.staffResponseDeadline, staffWaitState: x.staffWaitState, staffWaitRound: x.staffWaitRound, cancelReason: x.cancellationReason }
   })
 }
 export async function cancelAdminBooking(item: Booking) { await adminRequest('booking', `/bookings/${item.id}/cancel`, 'POST', { reason: item.cancelReason || 'Admin hủy đơn' }) }
@@ -70,8 +71,7 @@ export async function getAdminStaff(period='ALL'): Promise<Staff[]> {
   const people = await getStaff()
   return Promise.all(people.map(async person => {
     const [ops, wallet] = await Promise.all([adminRequest<StaffOperations>('booking', `/admin/staff/${person.id}/operations?period=${period}`), adminRequest<{ balance: { totalEarned: number }; incomes: {staffAmount:number;incomeDate:string;status:string}[] }>('finance', `/admin/staff/${person.id}/wallet`)])
-    const areaKeys: Record<string, string> = { 'Quận 1': 'quan-1', 'Quận 2': 'quan-2', 'Quận 3': 'quan-3', 'Quận 7': 'quan-7', 'Tân Bình': 'quan-tan-binh', 'Bình Thạnh': 'quan-binh-thanh' }
-    return { ...person, skillIds: ops.capabilities.filter(c => c.status === 'APPROVED').map(c => String(c.serviceId)), areaIds: ops.availability.saved.areaIds.map(a => areaKeys[a] || a), totalTrips: ops.completedBookings + ops.cancelledBookings, completedBookings: ops.completedBookings, cancelledBookings: ops.cancelledBookings, income: period==='ALL'?wallet.balance.totalEarned:wallet.incomes.filter(i=>i.status==='SETTLED' && i.incomeDate.slice(0,7)===new Date(new Date().getFullYear(),new Date().getMonth()-(period==='PREVIOUS'?1:0),15).toLocaleDateString('sv-SE').slice(0,7)).reduce((sum,i)=>sum+i.staffAmount,0), averageRating: ops.averageRating,
+    return { ...person, skillIds: ops.capabilities.filter(c => c.status === 'APPROVED').map(c => String(c.serviceId)), areaIds: ops.availability.saved.areaIds, totalTrips: ops.completedBookings + ops.cancelledBookings, completedBookings: ops.completedBookings, cancelledBookings: ops.cancelledBookings, income: period==='ALL'?wallet.balance.totalEarned:wallet.incomes.filter(i=>i.status==='SETTLED' && i.incomeDate.slice(0,7)===new Date(new Date().getFullYear(),new Date().getMonth()-(period==='PREVIOUS'?1:0),15).toLocaleDateString('sv-SE').slice(0,7)).reduce((sum,i)=>sum+i.staffAmount,0), averageRating: ops.averageRating,
       violations: ops.restrictions.map(r => ({ id: String(r.id), reason: r.reason, date: new Date(r.startsAt).toLocaleDateString('sv-SE',{timeZone:'Asia/Ho_Chi_Minh'}), penalty: r.type === 'SUSPENSION' ? 'Đình chỉ nhận việc' : r.type === 'SERVICE_LIMIT' ? 'Hạn chế dịch vụ' : 'Cảnh báo' })) }
   }))
 }
@@ -106,3 +106,6 @@ export function exportCsv(filename: string, rows: (string | number)[][]) {
   const blob = new Blob(['\uFEFF' + rows.map(row => row.map(cell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = filename; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+
+export interface BookingHistoryEntry { id: number; status: string; description: string; timestamp: string; changedBy: string }
+export const getAdminBookingHistory = (id: string) => adminRequest<BookingHistoryEntry[]>('booking', `/bookings/${id}/history`)

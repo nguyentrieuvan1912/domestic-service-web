@@ -71,7 +71,7 @@ export default function PromotionTable({
               {/* Đã dùng / Giới hạn */}
               <td className="px-4 py-3.5 text-xs font-semibold text-slate-700 whitespace-nowrap leading-tight">
                 <span className="text-emerald-700 font-bold">{item.usedCount}</span> /{' '}
-                {item.usageLimit} lượt
+                {item.usageLimit == null ? 'Không giới hạn' : `${item.usageLimit} lượt`}
               </td>
 
               {/* Trạng thái */}

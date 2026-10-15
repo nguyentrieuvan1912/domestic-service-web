@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../../api/catalog'
 import { adminRequest } from '../../../api/operations'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -15,15 +16,6 @@ type StaffModalProps = {
 }
 
 type StaffTab = 'profile' | 'skills' | 'statistics' | 'violations'
-
-const legacyAreaOptions = [
-  { id: 'quan-1', name: 'Quận 1' },
-  { id: 'quan-2', name: 'Quận 2' },
-  { id: 'quan-3', name: 'Quận 3' },
-  { id: 'quan-7', name: 'Quận 7' },
-  { id: 'quan-tan-binh', name: 'Quận Tân Bình' },
-  { id: 'quan-binh-thanh', name: 'Quận Bình Thạnh' },
-]
 
 const tabs: { id: StaffTab; label: string }[] = [
   { id: 'profile', label: 'Hồ sơ & Trạng thái' },
@@ -79,12 +71,11 @@ export default function StaffModal({ period='CURRENT',
     if (accountOnly) return
     let active = true
     void adminRequest<{items: {id: number; name: string}[]}>('identity', '/administrative-units/hcm').then(data => {
-      if (active) setAreaOptions(data.items.map(unit => ({ id: unit.name, name: unit.name })).sort((a,b) => a.name.localeCompare(b.name, 'vi')))
+      if (active) { const options=data.items.map(unit => ({ id: unit.name, name: unit.name })).sort((a,b) => a.name.localeCompare(b.name, 'vi')); setAreaOptions(options); setDraft(previous => ({ ...previous, areaIds: previous.areaIds.filter(id => options.some(area => area.id === id)) })); }
     }).catch(cause => { if (active) setAreaError(cause instanceof Error ? cause.message : 'Chưa tải được phường/xã.') })
     return () => { active = false }
   }, [accountOnly])
-  const selectedLegacy = draft.areaIds.filter(id => !areaOptions.some(area => area.id === id)).map(id => ({id, name: (legacyAreaOptions.find(area => area.id === id)?.name || id) + ' (địa bàn đã lưu)'}))
-  const visibleAreas = [...areaOptions, ...selectedLegacy].filter(area => normalizeArea(area.name).includes(normalizeArea(areaSearch)))
+  const visibleAreas = areaOptions.filter(area => normalizeArea(area.name).includes(normalizeArea(areaSearch)))
 
   // Form states for new violation
   const [violationReason, setViolationReason] = useState('Hủy lịch phút chót')
@@ -251,6 +242,10 @@ export default function StaffModal({ period='CURRENT',
                     />
                   </div>
 
+                  <div>{draft.avatar&&<img alt="Ảnh đại diện nhân viên" className="mb-3 h-16 w-16 rounded-full" src={draft.avatar.startsWith('/')?API_BASE_URL+draft.avatar:draft.avatar}/>}<label className={labelClassName}>Ngày sinh</label><input type="date" min="1940-01-01" max={new Date(new Date().getFullYear()-18,new Date().getMonth(),new Date().getDate()).toLocaleDateString('sv-SE')} value={draft.dateOfBirth||''} onChange={event=>setDraft({...draft,dateOfBirth:event.target.value,birthYear:event.target.value?Number(event.target.value.slice(0,4)):draft.birthYear})} className={inputClassName}/>{!draft.dateOfBirth&&draft.birthYear&&<p className="mt-1 text-xs text-slate-500">Hồ sơ cũ chỉ có năm sinh {draft.birthYear}; bổ sung ngày/tháng khi có thông tin chính xác.</p>}</div>
+                  <div><label className={labelClassName}>Giới tính</label><select value={draft.gender||'OTHER'} onChange={event=>setDraft({...draft,gender:event.target.value as Staff['gender']})} className={inputClassName}><option value="MALE">Nam</option><option value="FEMALE">Nữ</option><option value="OTHER">Khác</option></select></div>
+                  <div><label className={labelClassName}>Số năm kinh nghiệm</label><input type="number" min="0" max="80" step="0.5" value={draft.experienceYears??0} onChange={event=>setDraft({...draft,experienceYears:Number(event.target.value)})} className={inputClassName}/></div>
+                  <div><label className={labelClassName}>Giới thiệu</label><textarea value={draft.bio||''} maxLength={2000} onChange={event=>setDraft({...draft,bio:event.target.value})} className={inputClassName}/></div>
                   <div>
                     <label className={labelClassName}>Số CCCD / Định danh</label>
                     <input
