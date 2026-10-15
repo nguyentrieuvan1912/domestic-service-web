@@ -37,11 +37,12 @@ export default function AdminLogin() {
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-slate-700">
-            Email hoặc số điện thoại
+            Tài khoản, email hoặc số điện thoại
             <input
               type="text"
               autoComplete="username"
               required
+              placeholder="admin"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
@@ -53,6 +54,7 @@ export default function AdminLogin() {
               type="password"
               autoComplete="current-password"
               required
+              placeholder="admin123"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"

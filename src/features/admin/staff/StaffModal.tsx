@@ -1,5 +1,5 @@
 import { adminRequest } from '../../../api/operations'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { Service } from '../../../data/mockAdminServices'
 import type { Staff, StaffLevel, StaffStatus, StaffViolation } from '../../../data/mockAdminStaff'
@@ -16,7 +16,7 @@ type StaffModalProps = {
 
 type StaffTab = 'profile' | 'skills' | 'statistics' | 'violations'
 
-const areaOptions = [
+const legacyAreaOptions = [
   { id: 'quan-1', name: 'Quận 1' },
   { id: 'quan-2', name: 'Quận 2' },
   { id: 'quan-3', name: 'Quận 3' },
@@ -55,7 +55,7 @@ const createDraft = (staff: Staff | null, services: Service[]): Staff =>
         completedBookings: 0,
         cancelledBookings: 0,
         skillIds: services.slice(0, 2).map((service) => service.id),
-        areaIds: ['quan-1', 'quan-3'],
+        areaIds: [],
         violations: [],
       }
 
@@ -71,6 +71,20 @@ export default function StaffModal({ period='CURRENT',
   const [activeTab, setActiveTab] = useState<StaffTab>('profile')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [areaOptions, setAreaOptions] = useState<{id: string; name: string}[]>([])
+  const [areaSearch, setAreaSearch] = useState('')
+  const [areaError, setAreaError] = useState('')
+  const normalizeArea = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().trim()
+  useEffect(() => {
+    if (accountOnly) return
+    let active = true
+    void adminRequest<{items: {id: number; name: string}[]}>('identity', '/administrative-units/hcm').then(data => {
+      if (active) setAreaOptions(data.items.map(unit => ({ id: unit.name, name: unit.name })).sort((a,b) => a.name.localeCompare(b.name, 'vi')))
+    }).catch(cause => { if (active) setAreaError(cause instanceof Error ? cause.message : 'Chưa tải được phường/xã.') })
+    return () => { active = false }
+  }, [accountOnly])
+  const selectedLegacy = draft.areaIds.filter(id => !areaOptions.some(area => area.id === id)).map(id => ({id, name: (legacyAreaOptions.find(area => area.id === id)?.name || id) + ' (địa bàn đã lưu)'}))
+  const visibleAreas = [...areaOptions, ...selectedLegacy].filter(area => normalizeArea(area.name).includes(normalizeArea(areaSearch)))
 
   // Form states for new violation
   const [violationReason, setViolationReason] = useState('Hủy lịch phút chót')
@@ -364,10 +378,12 @@ export default function StaffModal({ period='CURRENT',
 
                 <div className="border-t border-slate-200 pt-5">
                   <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
-                    Khu vực hoạt động
+                    Phường/xã hoạt động
                   </h3>
-                  <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-                    {areaOptions.map((area) => {
+                  <input className={inputClassName + ' mt-3'} aria-label="Tìm phường/xã hoạt động" placeholder="Nhập tên phường/xã, có hoặc không dấu" value={areaSearch} onChange={event => setAreaSearch(event.target.value)} />
+                  {areaError && <p role="alert" className="mt-2 text-sm text-red-600">{areaError}</p>}
+                  <div className="mt-3 grid max-h-80 gap-2.5 overflow-y-auto sm:grid-cols-2">
+                    {visibleAreas.map((area) => {
                       const isChecked = draft.areaIds.includes(area.id)
                       return (
                         <label
