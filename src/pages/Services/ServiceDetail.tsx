@@ -5,6 +5,7 @@ import { type CatalogPage, type CatalogDetail } from '../../api/catalog'
 import { webCatalogView } from '../../api/catalog-view'
 import { useCatalogResource } from '../../hooks/useCatalogResource'
 import CatalogState from '../../components/common/CatalogState'
+import { AreaPackageAdvisor } from '../../components/AreaPackageAdvisor'
 
 function AppDownloadModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
@@ -47,7 +48,7 @@ function ServiceDetailContent({ detail }: { detail: CatalogDetail }) {
   }
 
   return <div className="overflow-hidden bg-white">
-    <section className="relative isolate min-h-[520px] bg-slate-950 px-5 py-20 text-white sm:min-h-[600px] sm:py-28 lg:px-8"><img src={service.bannerImage} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-45" /><div className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950 via-slate-950/75 to-slate-950/20" /><div className="mx-auto flex max-w-7xl items-center"><div className="max-w-2xl"><Link to="/services" className="text-sm font-bold text-emerald-300 hover:text-white">← Tất cả dịch vụ</Link><p className="mt-8 text-sm font-bold uppercase tracking-[0.18em] text-emerald-300">Dịch vụ CleanMaster</p><h1 className="mt-4 text-4xl font-black leading-tight tracking-tight sm:text-6xl">{service.name}</h1><p className="mt-6 max-w-xl text-lg leading-8 text-slate-200">{service.description} {service.suitableFor}.</p><button type="button" onClick={() => setIsModalOpen(true)} className="mt-8 rounded-full bg-emerald-500 px-6 py-3.5 font-bold text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950">Trải nghiệm dịch vụ ngay →</button></div></div></section>
+    <section className="relative isolate min-h-[520px] bg-slate-950 px-5 py-20 text-white sm:min-h-[600px] sm:py-28 lg:px-8"><img src={service.bannerImage} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-45" /><div className="absolute inset-0 -z-10 bg-gradient-to-r from-slate-950 via-slate-950/75 to-slate-950/20" /><div className="mx-auto flex max-w-7xl items-center"><div className="max-w-2xl"><Link to="/services" className="text-sm font-bold text-emerald-300 hover:text-white">← Tất cả dịch vụ</Link><p className="mt-8 text-sm font-bold uppercase tracking-[0.18em] text-emerald-300">Dịch vụ CleanMaster</p><h1 className="mt-4 text-4xl font-black leading-tight tracking-tight sm:text-6xl">{service.name}</h1><p className="mt-6 max-w-xl text-lg leading-8 text-slate-200">{service.description} {service.suitableFor}.</p><p className="mt-4 font-semibold text-emerald-300">Khu vực phục vụ: TP. Hồ Chí Minh</p><button type="button" onClick={() => setIsModalOpen(true)} className="mt-8 rounded-full bg-emerald-500 px-6 py-3.5 font-bold text-white shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950">Trải nghiệm dịch vụ ngay →</button></div></div></section>
 
     <section className="mx-auto max-w-7xl px-5 py-20 sm:py-24 lg:px-8"><div className="mx-auto max-w-2xl text-center"><p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Giá trị khác biệt</p><h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Vì sao nên chọn CleanMaster?</h2></div><div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{service.benefits.map((benefit) => <article key={benefit.title} className="rounded-2xl border border-slate-200 p-6 transition hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-900/5"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-lg font-black text-emerald-700">{benefit.icon}</span><h3 className="mt-5 font-black text-slate-900">{benefit.title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{benefit.description}</p></article>)}</div></section>
 
@@ -58,6 +59,16 @@ function ServiceDetailContent({ detail }: { detail: CatalogDetail }) {
     <section className="bg-[#f3faf7] px-5 py-20 sm:py-24 lg:px-8"><div className="mx-auto max-w-7xl"><div className="max-w-2xl"><p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Quy trình trên ứng dụng</p><h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Cách đặt dịch vụ</h2></div><div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">{service.bookingSteps.map((step, index) => <article key={step.title} className="relative"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-black text-white">0{index + 1}</span><h3 className="mt-5 font-black text-slate-900">{step.title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{step.description}</p></article>)}</div></div></section>
 
     <section className="px-5 py-20 sm:py-24 lg:px-8"><div className="mx-auto max-w-5xl rounded-[2rem] bg-emerald-600 px-6 py-12 text-center text-white shadow-2xl shadow-emerald-900/15 sm:px-12"><h2 className="text-3xl font-black tracking-tight sm:text-4xl">Sẵn sàng để nhà sạch hơn?</h2><p className="mx-auto mt-4 max-w-xl leading-7 text-emerald-50">Tải ứng dụng CleanMaster để nhập chi tiết nhu cầu và bắt đầu trải nghiệm {service.name.toLowerCase()}.</p><button type="button" onClick={() => setIsModalOpen(true)} className="mt-8 rounded-full bg-white px-7 py-3.5 font-bold text-emerald-700 hover:bg-emerald-50">Trải nghiệm ngay →</button></div></section>
+    <AreaPackageAdvisor detail={detail}/>
+    {detail.requirements.length > 0 && <section className="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+      <h2 className="text-3xl font-black text-slate-900">Chuẩn bị nhu cầu cho {detail.service.name}</h2>
+      <p className="mt-4 text-slate-600">Khi đặt trên ứng dụng, bạn sẽ chọn các thông tin riêng dưới đây. Lịch được lưu ở trạng thái chờ nhân viên phù hợp nhận việc.</p>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">{detail.requirements.map(field => <article key={field.id} className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5">
+        <h3 className="font-bold text-slate-900">{field.label}{field.required ? ' *' : ''}</h3>
+        {field.options.length > 0 && <p className="mt-2 text-sm text-slate-600">{field.options.map(String).join(' • ')}</p>}
+        {field.validationRules.hint != null && <p className="mt-2 text-sm text-slate-600">{String(field.validationRules.hint)}</p>}
+      </article>)}</div>
+    </section>}
     {isModalOpen && <AppDownloadModal onClose={() => setIsModalOpen(false)} />}
   </div>
 }
