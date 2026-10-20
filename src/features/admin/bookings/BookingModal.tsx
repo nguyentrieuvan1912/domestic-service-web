@@ -171,7 +171,7 @@ export default function BookingModal({
             {booking.status === 'WAITING_STAFF' && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
               <p className="font-semibold">Đang chờ {booking.staffName || 'nhân viên khách đã chọn'} xác nhận</p>
               {booking.staffResponseDeadline && <p>Hạn phản hồi: {dateTime(booking.staffResponseDeadline)}</p>}
-              <p>Lượt chờ: {booking.staffWaitRound || 1} • 3 phút/lượt</p>
+              <p>Lượt chờ: {booking.staffWaitRound || 1} • 5 phút/lượt</p>
             </div>}
             {/* Staff info based on status */}
             {booking.status === 'SEARCHING' && (

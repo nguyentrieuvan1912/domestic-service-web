@@ -1,4 +1,5 @@
 import FinanceApprovalPanel from '../../components/admin/FinanceApprovalPanel'
+import StaffTopupPanel from '../../components/admin/StaffTopupPanel'
 import { getAdminTransactions, saveTransactionNote } from '../../api/operations'
 import { useAdminResource } from '../../hooks/useAdminResource'
 import ResourceStatus from '../../components/admin/ResourceStatus'
@@ -71,6 +72,7 @@ export default function AdminTransactions() {
 
   return (
     <div className="space-y-8">
+      <StaffTopupPanel />
       <ResourceStatus {...resource} />
       {/* Top Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
