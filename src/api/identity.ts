@@ -32,6 +32,7 @@ export async function identityRequest<T>(path: string, options: RequestInit = {}
     if (response.status === 401 && role) saveSession(role, null)
     throw new Error(problem?.errors ? `Thông tin không hợp lệ: ${Object.keys(problem.errors).join(', ')}` : problem?.detail || 'Không thể xử lý yêu cầu. Vui lòng thử lại.')
   }
+  if (role === 'ADMIN' && options.method && options.method !== 'GET') window.dispatchEvent(new Event('admin-data-changed'))
   return response.status === 204 ? undefined as T : response.json() as Promise<T>
 }
 export async function loginAccount(identifier: string, password: string, role: AccountRole) {

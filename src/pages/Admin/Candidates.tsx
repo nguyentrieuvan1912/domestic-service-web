@@ -1,3 +1,4 @@
+import { useAdminRefresh } from '../../hooks/useAdminRefresh'
 import { useEffect, useState } from 'react'
 import type { Candidate, CandidateStatus } from '../../data/mockAdminCandidates'
 import { candidateStatuses } from '../../data/mockAdminCandidates'
@@ -20,6 +21,7 @@ export default function AdminCandidates() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [attempt, setAttempt] = useState(0)
+  useAdminRefresh(() => setAttempt(value => value + 1))
   useEffect(() => {
     let active = true
     void getCandidates().then(data => { if (active) { setCandidates(data); setError('') } }).catch(cause => { if (active) setError(cause.message) }).finally(() => { if (active) setLoading(false) })

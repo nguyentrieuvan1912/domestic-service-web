@@ -1,3 +1,4 @@
+import AdminWorkBadge from './AdminWorkBadge'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { adminRequest } from '../../api/operations'
 import { useAdminResource } from '../../hooks/useAdminResource'
@@ -29,7 +30,7 @@ export default function CommunityReportsPanel({ changed }: { changed: () => void
     finally { locked.current = false; setBusy(false) }
   }
   return <div className="space-y-3 rounded-xl border border-orange-200 bg-orange-50/30 p-4">
-    <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold text-slate-900">Báo cáo bình luận</h3><button className={button} disabled={busy} onClick={resource.retry}>Tải lại báo cáo</button></div>
+    <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold text-slate-900">Báo cáo bình luận<AdminWorkBadge target="/admin/reviews#community-reports" /></h3><button className={button} disabled={busy} onClick={resource.retry}>Tải lại báo cáo</button></div>
     <div className="flex flex-wrap gap-2">{[{ id: 'OPEN', label: 'Chờ xử lý' }, { id: 'RESOLVED', label: 'Đã xử lý' }, { id: 'DISMISSED', label: 'Đã bỏ qua' }, { id: 'ALL', label: 'Tất cả' }].map(item => <button key={item.id} disabled={busy || !!decision} aria-pressed={status === item.id} className={button + (status === item.id ? ' border-orange-500 bg-orange-100 text-orange-900' : '')} onClick={() => { setStatus(item.id); setBefore(null); setOpened(null) }}>{item.label}</button>)}</div>
     <ResourceStatus {...resource} />{error && <p role="alert" className="text-sm text-red-700">{error}</p>}{notice && <p role="status" className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
     {!resource.loading && !resource.error && !resource.data.items.length && <p className="text-sm text-slate-500">Không có báo cáo trong mục này.</p>}

@@ -2,35 +2,26 @@ import { useState } from 'react'
 import { adminRequest } from '../../api/operations'
 import { useAdminResource } from '../../hooks/useAdminResource'
 import ResourceStatus from './ResourceStatus'
-
+import { FinanceCard, FinanceEmpty, FinanceIcon, FinancePagination, FinanceStatus } from '../../features/admin/transactions/FinanceUI'
+import { inputClass, money, secondaryButton } from '../../features/admin/transactions/financeStyles'
 type Topup = { id: number; staffId: number; amount: number; amountReceived: number; status: string; createdAt: string; paidAt: string | null; verifiedAt: string | null }
 type Capabilities = { topupEnabled: boolean; payoutEnabled: boolean; message: string }
-const load = async () => {
-  const [capabilities, topups] = await Promise.all([adminRequest<Capabilities>('finance', '/payment-capabilities'), adminRequest<Topup[]>('finance', '/admin/topups')])
-  return { capabilities, topups }
-}
-const labels: Record<string, string> = { CREATING: 'Đang tạo / cần khôi phục', PENDING: 'Chờ chuyển khoản', PAID: 'Đã nhận tiền', CANCELLED: 'Đã hủy liên kết', EXPIRED: 'Hết hạn liên kết', REVIEW: 'Cần đối soát' }
-const money = (value: number) => value.toLocaleString('vi-VN') + 'đ'
+const load = async () => { const [capabilities, topups] = await Promise.all([adminRequest<Capabilities>('finance', '/payment-capabilities'), adminRequest<Topup[]>('finance', '/admin/topups')]); return { capabilities, topups } }
+const labels: Record<string, string> = { CREATING: 'Đang tạo liên kết', PENDING: 'Chờ chuyển khoản', PAID: 'Đã nhận tiền', CANCELLED: 'Đã hủy', EXPIRED: 'Hết hạn', REVIEW: 'Cần đối soát' }
 export default function StaffTopupPanel() {
   const resource = useAdminResource(load, { capabilities: { topupEnabled: false, payoutEnabled: false, message: '' }, topups: [] })
-  const [busy, setBusy] = useState(false), [error, setError] = useState('')
-  const refresh = async (id: number) => {
-    if (busy) return
-    setBusy(true); setError('')
-    try { await adminRequest('finance', '/admin/topups/' + id + '/refresh', 'POST'); resource.retry() }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'Chưa đối soát được.') }
-    finally { setBusy(false) }
-  }
-  return <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-    <div className="flex flex-wrap justify-between gap-3"><h2 className="text-lg font-bold text-slate-900">Nạp tiền nhân viên · payOS</h2><button onClick={resource.retry} className="rounded-lg border px-3 py-2 text-sm">Tải lại</button></div>
-    <ResourceStatus {...resource} />
-    <p className="text-sm text-slate-600">{resource.data.capabilities.message}</p>
-    <p className="text-sm text-slate-500">Tiền nạp là khoản phải trả nhân viên, không phải doanh thu dịch vụ. Dữ liệu chỉ ghi đã nhận sau khi xác minh với payOS. Chuyển tiền rút tự động chưa bật.</p>
-    {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-    {!resource.loading && !resource.error && resource.data.topups.length === 0 && <p className="text-sm text-slate-500">Chưa có yêu cầu nạp tiền.</p>}
-    {resource.data.topups.map(item => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 py-3 text-sm">
-      <div className="min-w-0 space-y-1"><p className="font-semibold">#{item.id} · Nhân viên #{item.staffId} · {money(item.amount)}</p><p>{labels[item.status] || item.status} · Đã nhận {money(item.amountReceived)}</p><p className="text-xs text-slate-500">Tạo: {new Date(item.createdAt).toLocaleString('vi-VN')}{item.verifiedAt ? ' · Kiểm tra: ' + new Date(item.verifiedAt).toLocaleString('vi-VN') : ''}</p></div>
-      {item.status !== 'PAID' && <button disabled={busy || !resource.data.capabilities.topupEnabled} onClick={() => void refresh(item.id)} className="rounded-lg border border-emerald-200 px-3 py-2 font-semibold text-emerald-700 disabled:opacity-40">Đối soát với payOS</button>}
-    </div>)}
-  </section>
+  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [filter, setFilter] = useState('ALL'), [page, setPage] = useState(1)
+  const visible = resource.data.topups.filter(item => filter === 'ALL' || item.status === filter)
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(visible.length / 10)))
+  const confirmed = resource.data.topups.filter(item => item.status === 'PAID').reduce((sum, item) => sum + item.amountReceived, 0)
+  const refresh = async (id: number) => { if (busy) return; setBusy(true); setError(''); try { await adminRequest('finance', '/admin/topups/' + id + '/refresh', 'POST'); resource.retry() } catch (cause) { setError(cause instanceof Error ? cause.message : 'Chưa đối soát được.') } finally { setBusy(false) } }
+  return <div className="space-y-5"><ResourceStatus {...resource} />
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]"><div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-5"><span className="rounded-lg bg-slate-50 p-2.5 text-slate-500"><FinanceIcon name="bank" /></span><div><h2 className="text-sm font-semibold text-slate-800">Nạp tiền qua payOS</h2><p className="mt-1 text-sm leading-6 text-slate-500">Tiền nạp được ghi vào ví nhân viên sau khi xác minh giao dịch thực tế.</p><p className="mt-2 text-xs text-slate-400">Đây là khoản phải trả nhân viên, được theo dõi riêng với doanh thu dịch vụ.</p></div></div><div className="min-w-[240px] rounded-xl border border-slate-200 bg-white p-5"><p className="text-xs text-slate-500">Tiền nạp đã xác nhận</p><p className="mt-2 text-2xl font-semibold tabular-nums text-slate-900">{!resource.loading && !resource.error ? money(confirmed) : '—'}</p><div className="mt-2"><FinanceStatus status={resource.data.capabilities.topupEnabled ? 'VERIFIED' : 'PENDING'} label={resource.data.capabilities.topupEnabled ? 'Đủ cấu hình kênh thu' : 'Chưa sẵn sàng'} /></div></div></div>
+    {error && <p role="alert" className="rounded-lg border border-rose-100 bg-rose-50 p-4 text-sm text-rose-700">{error}</p>}
+    <FinanceCard title="Yêu cầu nạp tiền" description="Theo dõi số tiền nhận và kiểm tra các giao dịch đang chờ." action={<button type="button" disabled={resource.loading || busy} onClick={resource.retry} className={secondaryButton}><FinanceIcon name="refresh" className="h-4 w-4" />Tải lại</button>}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-3"><label className="sr-only" htmlFor="topup-filter">Trạng thái nạp tiền</label><select id="topup-filter" value={filter} onChange={event => { setFilter(event.target.value); setPage(1) }} className={`${inputClass} sm:max-w-[220px]`}><option value="ALL">Tất cả trạng thái</option>{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select><p className="text-xs text-slate-400">{visible.length} yêu cầu trong danh sách</p></div>
+      <div className="relative overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-slate-100 text-xs text-slate-500"><tr><th className="px-6 py-3.5">Yêu cầu</th><th className="px-4 py-3.5">Nhân viên</th><th className="px-4 py-3.5 text-right">Số tiền</th><th className="px-4 py-3.5">Trạng thái</th><th className="px-6 py-3.5 text-right">Đối soát</th></tr></thead><tbody className="divide-y divide-slate-100">{visible.slice((currentPage - 1) * 10, currentPage * 10).map(item => <tr key={item.id} className="hover:bg-slate-50/70"><td className="px-6 py-4"><p className="font-mono text-xs font-medium">#{item.id}</p><p className="mt-1.5 text-xs text-slate-400">{new Date(item.createdAt).toLocaleString('vi-VN')}</p></td><td className="px-4 py-4 text-slate-600">Nhân viên #{item.staffId}</td><td className="px-4 py-4 text-right"><p className="font-semibold tabular-nums">{money(item.amount)}</p><p className="mt-1 text-xs text-slate-400">Đã nhận {money(item.amountReceived)}</p></td><td className="px-4 py-4"><FinanceStatus status={item.status} label={labels[item.status]} /></td><td className="px-6 py-4 text-right">{item.status !== 'PAID' ? <button disabled={busy || !resource.data.capabilities.topupEnabled} onClick={() => void refresh(item.id)} className={secondaryButton}>Kiểm tra payOS</button> : <span className="text-xs text-slate-400">{item.verifiedAt ? new Date(item.verifiedAt).toLocaleString('vi-VN') : 'Đã xác nhận'}</span>}</td></tr>)}</tbody></table></div>
+      {!resource.loading && !resource.error && !visible.length && <FinanceEmpty title="Không có yêu cầu nạp tiền phù hợp" description="Các yêu cầu nạp ví thật của nhân viên sẽ hiển thị tại đây." />}<FinancePagination page={currentPage} total={visible.length} onChange={setPage} />
+    </FinanceCard>
+  </div>
 }

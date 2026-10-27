@@ -1,192 +1,57 @@
+import AdminWorkBadge from '../../components/admin/AdminWorkBadge'
+import { useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
 import FinanceApprovalPanel from '../../components/admin/FinanceApprovalPanel'
 import StaffTopupPanel from '../../components/admin/StaffTopupPanel'
-import { getAdminTransactions, saveTransactionNote } from '../../api/operations'
+import { exportCsv, getAdminTransactions, saveTransactionNote } from '../../api/operations'
 import { useAdminResource } from '../../hooks/useAdminResource'
 import ResourceStatus from '../../components/admin/ResourceStatus'
-import { useState } from 'react'
 import type { Transaction } from '../../data/mockAdminTransactions'
 import TransactionModal from '../../features/admin/transactions/TransactionModal'
 import TransactionTable from '../../features/admin/transactions/TransactionTable'
+import { FinanceIcon, FinancePagination } from '../../features/admin/transactions/FinanceUI'
+import { inputClass, money, secondaryButton } from '../../features/admin/transactions/financeStyles'
 
-type FilterTab = 'ALL' | 'PAYMENT' | 'PAYOUT_REFUND'
-
-const filterTabs: { id: FilterTab; label: string }[] = [
-  { id: 'ALL', label: 'Tất cả' },
-  { id: 'PAYMENT', label: 'Dòng tiền Thu (Payments)' },
-  { id: 'PAYOUT_REFUND', label: 'Dòng tiền Chi (Payout/Refund)' },
-]
-
+type Section = 'transactions' | 'withdrawals' | 'topups' | 'reconciliation' | 'settings'
+const sections: { id: Section; label: string }[] = [{ id: 'transactions', label: 'Lịch sử giao dịch' }, { id: 'withdrawals', label: 'Rút tiền' }, { id: 'topups', label: 'Nạp tiền' }, { id: 'reconciliation', label: 'Đối soát & hóa đơn' }, { id: 'settings', label: 'Thiết lập' }]
 export default function AdminTransactions() {
-  const [activeTab, setActiveTab] = useState<FilterTab>('ALL')
   const resource = useAdminResource(getAdminTransactions, [] as Transaction[])
-  const { data: transactions, setData: setTransactions } = resource
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
-  const [search, setSearch] = useState('')
-
-  const filteredTransactions = transactions.filter((item) => {
-    // Tab filter logic
-    let matchesTab = true
-    if (activeTab === 'PAYMENT') {
-      matchesTab = item.type === 'PAYMENT'
-    } else if (activeTab === 'PAYOUT_REFUND') {
-      matchesTab = item.type === 'PAYOUT' || item.type === 'REFUND'
-    }
-
-    // Search query logic
-    const query = search.trim().toLowerCase()
-    const matchesSearch =
-      !query ||
-      item.id.toLowerCase().includes(query) ||
-      item.bookingId.toLowerCase().includes(query) ||
-      item.actorName.toLowerCase().includes(query) ||
-      item.actorPhone.toLowerCase().includes(query)
-
-    return matchesTab && matchesSearch
+  const [params, setParams] = useSearchParams()
+  const requestedSection = params.get('section')
+  const section: Section = sections.some(item => item.id === requestedSection) ? requestedSection as Section : 'transactions'
+  const setSection = (value: Section) => setParams({ section: value }, { replace: true })
+  const [selected, setSelected] = useState<Transaction | null>(null)
+  const [search, setSearch] = useState(''), [type, setType] = useState('ALL'), [status, setStatus] = useState('ALL')
+  const [page, setPage] = useState(1), [revision, setRevision] = useState(0)
+  const transactions = resource.data
+  const filtered = transactions.filter(item => {
+    const query = search.trim().toLocaleLowerCase('vi-VN')
+    return (type === 'ALL' || item.type === type) && (status === 'ALL' || item.status === status) && (!query || [item.id, item.bookingId, item.actorName, item.actorPhone].some(value => value.toLocaleLowerCase('vi-VN').includes(query)))
   })
-
-  const handleSaveTransaction = async (updated: Transaction) => {
-    await saveTransactionNote(updated)
-    const savedData = await getAdminTransactions(); setTransactions(savedData)
-    setSelectedTransaction(null)
-  }
-
-  const totalRevenue = transactions
-    .filter((t) => t.type === 'PAYMENT' && t.status === 'SUCCESS')
-    .reduce((sum, t) => sum + t.amount, 0)
-
-  const totalPlatformFees = transactions
-    .filter((t) => t.status === 'SUCCESS')
-    .reduce((sum, t) => sum + (t.platformFee || 0), 0)
-
-  const totalExpenses = transactions
-    .filter((t) => (t.type === 'PAYOUT' || t.type === 'REFUND') && t.status === 'SUCCESS')
-    .reduce((sum, t) => sum + t.amount, 0)
-
-  const getTabCount = (tabId: FilterTab): number => {
-    if (tabId === 'ALL') return transactions.length
-    if (tabId === 'PAYMENT') return transactions.filter((t) => t.type === 'PAYMENT').length
-    if (tabId === 'PAYOUT_REFUND')
-      return transactions.filter((t) => t.type === 'PAYOUT' || t.type === 'REFUND').length
-    return 0
-  }
-
-  return (
-    <div className="space-y-8">
-      <StaffTopupPanel />
-      <ResourceStatus {...resource} />
-      {/* Top Header Section */}
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
-            Quản trị Tài chính & Dòng tiền
-          </p>
-          <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-slate-900">
-            Lịch sử giao dịch & Tài chính
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Theo dõi nhật ký nạp/rút tiền, doanh thu thanh toán dịch vụ và đối soát tiền.
-          </p>
-        </div>
-      </div>
-
-      {/* Summary KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Dòng tiền Thu (Thanh toán)
-          </p>
-          <p className="mt-2 text-2xl font-extrabold text-emerald-700 tracking-tight">
-            +{new Intl.NumberFormat('vi-VN').format(totalRevenue)}đ
-          </p>
-          <p className="mt-1 text-xs text-slate-400">Từ các đơn hoàn tất thanh toán</p>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Phí nền tảng hệ thống
-          </p>
-          <p className="mt-2 text-2xl font-extrabold text-sky-700 tracking-tight">
-            {new Intl.NumberFormat('vi-VN').format(totalPlatformFees)}đ
-          </p>
-          <p className="mt-1 text-xs text-slate-400">Tổng phí CleanMaster giữ lại</p>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Dòng tiền Chi (Payout/Refund)
-          </p>
-          <p className="mt-2 text-2xl font-extrabold text-rose-600 tracking-tight">
-            -{new Intl.NumberFormat('vi-VN').format(totalExpenses)}đ
-          </p>
-          <p className="mt-1 text-xs text-slate-400">Đã giải ngân cho Staff & Hoàn tiền</p>
-        </div>
-      </div>
-
-      {/* Filter Tabs & Search Container */}
-      <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          {/* Filter Tabs */}
-          <div className="flex gap-1 overflow-x-auto">
-            {filterTabs.map((tab) => {
-              const count = getTabCount(tab.id)
-              const isActive = activeTab === tab.id
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
-                    isActive
-                      ? 'border-emerald-600 text-emerald-700'
-                      : 'border-transparent text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  {tab.label}
-                  <span
-                    className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
-                      isActive
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-slate-100 text-slate-600'
-                    }`}
-                  >
-                    {count}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Search Input */}
-          <div className="w-full sm:w-80">
-            <label className="relative block">
-              <span className="sr-only">Tìm kiếm giao dịch</span>
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-                placeholder="Tìm theo Mã GD (TRX-xxx) hoặc Mã đơn (BK-xxx)..."
-              />
-            </label>
-          </div>
-        </div>
-
-        {/* Transaction Table */}
-        <TransactionTable
-          transactions={filteredTransactions}
-          onSelectTransaction={(trx) => setSelectedTransaction(trx)}
-        />
-      </section>
-
-      {/* Detail Modal */}
-      <FinanceApprovalPanel />
-      {selectedTransaction && (
-        <TransactionModal
-          transaction={selectedTransaction}
-          onClose={() => setSelectedTransaction(null)}
-          onSaveTransaction={handleSaveTransaction}
-        />
-      )}
-    </div>
-  )
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(filtered.length / 10)))
+  const received = transactions.filter(item => item.type === 'PAYMENT' && item.status === 'SUCCESS').reduce((sum, item) => sum + item.amount, 0)
+  const paid = transactions.filter(item => item.type !== 'PAYMENT' && item.status === 'SUCCESS').reduce((sum, item) => sum + item.amount, 0)
+  const pending = transactions.filter(item => item.status === 'PENDING')
+  const ready = !resource.loading && !resource.error
+  const summary = [
+    { label: 'Thanh toán đã thu', value: ready ? money(received) : '—', note: 'Từ thanh toán dịch vụ thành công', icon: 'in' as const },
+    { label: 'Rút & hoàn tiền đã chi', value: ready ? money(paid) : '—', note: 'Các giao dịch đã được xác nhận', icon: 'out' as const },
+    { label: 'Giao dịch chờ xử lý', value: ready ? String(pending.length) : '—', note: 'Theo danh sách giao dịch hiện tại', icon: 'clock' as const },
+  ]
+  const reload = () => { resource.retry(); setRevision(value => value + 1) }
+  return <div className="mx-auto max-w-[1600px] space-y-6">
+    <header className="flex flex-wrap items-start justify-between gap-4"><div><p className="mb-1 text-xs font-medium text-emerald-700">Quản lý dòng tiền</p><h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Tài chính & giao dịch</h1><p className="mt-2 text-sm leading-6 text-slate-500">Theo dõi thu chi, xử lý yêu cầu và đối soát trong cùng một nơi.</p></div><button type="button" onClick={reload} disabled={resource.loading} className={secondaryButton}><FinanceIcon name="refresh" className="h-4 w-4" />Tải lại dữ liệu</button></header>
+    <ResourceStatus {...resource} />
+    <div className="grid gap-4 md:grid-cols-3">{summary.map(item => <div key={item.label} className="rounded-xl border border-slate-200 bg-white px-5 py-5"><div className="flex items-center justify-between gap-3"><p className="text-sm font-medium text-slate-500">{item.label}</p><span className="rounded-lg bg-slate-50 p-2 text-slate-400"><FinanceIcon name={item.icon} className="h-4 w-4" /></span></div><p className={`mt-3 break-words text-2xl font-semibold tracking-tight tabular-nums ${item.label === 'Giao dịch chờ xử lý' && pending.length ? 'text-red-600' : 'text-slate-900'}`}>{item.value}</p><p className="mt-2 text-xs leading-5 text-slate-400">{item.note}</p></div>)}</div>
+    <nav aria-label="Các mục tài chính" className="flex gap-5 overflow-x-auto border-b border-slate-200 sm:gap-7">{sections.map(item => <button key={item.id} type="button" aria-current={section === item.id ? 'page' : undefined} onClick={() => setSection(item.id)} className={`relative shrink-0 whitespace-nowrap border-b-2 px-0.5 py-3.5 text-sm font-medium transition ${section === item.id ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-900'}`}>{item.label}<AdminWorkBadge target={'/admin/transactions?section=' + item.id} /></button>)}</nav>
+    {section === 'transactions' && <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 sm:px-6"><div><h2 className="font-semibold text-slate-900">Sổ giao dịch</h2><p className="mt-1 text-sm text-slate-500">Thanh toán dịch vụ, rút tiền nhân viên và hoàn tiền.</p></div><button type="button" disabled={!ready || !filtered.length} className={secondaryButton} onClick={() => exportCsv('cleanmaster-giao-dich.csv', [['Mã giao dịch', 'Mã đơn', 'Đối tượng', 'Số tiền', 'Loại', 'Trạng thái', 'Thời gian'], ...filtered.map(item => [item.id, item.bookingId, item.actorName, item.amount, item.type, item.status, item.createdAt])])}><FinanceIcon name="download" className="h-4 w-4" />Xuất danh sách</button></header>
+      <div className="grid gap-3 border-b border-slate-100 bg-slate-50/50 p-4 sm:grid-cols-2 xl:grid-cols-[minmax(200px,1fr)_190px_180px] sm:px-6"><label className="relative block"><span className="sr-only">Tìm kiếm giao dịch</span><span className="pointer-events-none absolute left-3 top-3 text-slate-400"><FinanceIcon name="search" className="h-4 w-4" /></span><input value={search} onChange={event => { setSearch(event.target.value); setPage(1) }} placeholder="Mã giao dịch, mã đơn, tên hoặc SĐT…" className={`${inputClass} pl-9`} /></label><select aria-label="Loại giao dịch" className={inputClass} value={type} onChange={event => { setType(event.target.value); setPage(1) }}><option value="ALL">Tất cả loại giao dịch</option><option value="PAYMENT">Thanh toán dịch vụ</option><option value="PAYOUT">Rút tiền nhân viên</option><option value="REFUND">Hoàn tiền khách hàng</option></select><select aria-label="Trạng thái giao dịch" value={status} className={inputClass} onChange={event => { setStatus(event.target.value); setPage(1) }}><option value="ALL">Tất cả trạng thái</option><option value="SUCCESS">Thành công</option><option value="PENDING">Chờ xử lý</option><option value="FAILED">Thất bại</option></select></div>
+      <div aria-busy={resource.loading}>{resource.loading ? <div className="px-6 py-12 text-center text-sm text-slate-400">Đang tải danh sách giao dịch…</div> : resource.error ? <div className="px-6 py-12 text-center text-sm text-slate-500">Chưa tải được giao dịch. Vui lòng tải lại dữ liệu.</div> : <TransactionTable transactions={filtered.slice((currentPage - 1) * 10, currentPage * 10)} onSelectTransaction={setSelected} />}</div><FinancePagination page={currentPage} total={filtered.length} onChange={setPage} />
+    </section>}
+    {section === 'topups' && <StaffTopupPanel key={revision} />}
+    {['withdrawals', 'reconciliation', 'settings'].includes(section) && <FinanceApprovalPanel key={section + revision} view={section as 'withdrawals' | 'reconciliation' | 'settings'} onChange={resource.retry} />}
+    {selected && <TransactionModal transaction={selected} onClose={() => setSelected(null)} onSaveTransaction={async updated => { await saveTransactionNote(updated); resource.setData(await getAdminTransactions()); setSelected(null) }} />}
+    <p className="px-1 text-xs leading-5 text-slate-400">Số liệu theo dữ liệu hệ thống đã ghi nhận. Tiền nạp ví nhân viên được theo dõi riêng, không tính vào tổng thanh toán dịch vụ.</p>
+  </div>
 }
-

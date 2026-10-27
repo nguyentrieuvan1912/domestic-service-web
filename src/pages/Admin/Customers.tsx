@@ -1,3 +1,4 @@
+import { useAdminRefresh } from '../../hooks/useAdminRefresh'
 import { useEffect, useState } from 'react'
 import type { Customer, CustomerStatus } from '../../data/mockAdminCustomers'
 import { getCustomers, saveCustomerStatus } from '../../api/identity'
@@ -21,6 +22,7 @@ export default function AdminCustomers() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [attempt, setAttempt] = useState(0)
+  useAdminRefresh(() => setAttempt(value => value + 1))
   useEffect(() => {
     let active = true
     void getCustomers().then(data => { if (active) { setCustomers(data); setError('') } }).catch(cause => { if (active) setError(cause.message) }).finally(() => { if (active) setLoading(false) })

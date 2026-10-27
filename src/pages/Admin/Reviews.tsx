@@ -1,3 +1,4 @@
+import AdminWorkBadge from '../../components/admin/AdminWorkBadge'
 import CommunityModerationPanel from '../../components/admin/CommunityModerationPanel'
 import SupportRequestsPanel from '../../components/admin/SupportRequestsPanel'
 import { getAdminReviews, saveAdminReview } from '../../api/operations'
@@ -66,8 +67,8 @@ export default function AdminReviews() {
 
   return (
     <div className="space-y-8">
-      <SupportRequestsPanel />
-      <CommunityModerationPanel />
+      <div id="support-requests" className="scroll-mt-6"><SupportRequestsPanel /></div>
+      <div id="community-posts" className="scroll-mt-6"><CommunityModerationPanel /></div>
       <ResourceStatus {...resource} />
       {/* Top Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -76,7 +77,7 @@ export default function AdminReviews() {
             Quản trị Chất lượng & Chăm sóc khách hàng
           </p>
           <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-slate-900">
-            Quản lý đánh giá & Hỗ trợ
+            Quản lý đánh giá & Hỗ trợ<AdminWorkBadge target="/admin/reviews#service-reviews" />
           </h1>
           <p className="mt-2 text-sm text-slate-500">
             Theo dõi ý kiến phản hồi của khách hàng, xử lý các khiếu nại chất lượng dịch vụ và kiểm duyệt nội dung thô tục.
@@ -85,7 +86,7 @@ export default function AdminReviews() {
       </div>
 
       {/* Filter Tabs & Search Container */}
-      <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <section id="service-reviews" className="scroll-mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           {/* Status Filter Tabs */}
           <div className="flex gap-1 overflow-x-auto">

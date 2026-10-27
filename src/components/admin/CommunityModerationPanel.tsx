@@ -1,3 +1,4 @@
+import AdminWorkBadge from './AdminWorkBadge'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { adminRequest } from '../../api/operations'
 import { useAdminResource } from '../../hooks/useAdminResource'
@@ -117,8 +118,8 @@ export default function CommunityModerationPanel() {
     setContent(''); setFiles([]); uploaded.current.clear(); tickets.current.clear(); publishKey.current = { body: '', key: key() }
   }
   return <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold text-slate-900">Kiểm duyệt cộng đồng</h2><p className="mt-1 text-sm text-slate-500">Bài chờ duyệt được ưu tiên ở đầu danh sách. Mở chi tiết để xem đầy đủ.</p></div>{pendingCount > 0 && <span className="rounded-xl border border-amber-300 bg-amber-100 px-4 py-2 text-base font-bold text-amber-900">{pendingCount} bài chờ duyệt</span>}</div><ResourceStatus {...resource} />{error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-    <CommunityReportsPanel changed={resource.retry} />
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-bold text-slate-900">Kiểm duyệt cộng đồng<AdminWorkBadge target="/admin/reviews#community-posts" /></h2><p className="mt-1 text-sm text-slate-500">Bài chờ duyệt được ưu tiên ở đầu danh sách. Mở chi tiết để xem đầy đủ.</p></div>{pendingCount > 0 && <span className="rounded-xl border border-amber-300 bg-amber-100 px-4 py-2 text-base font-bold text-amber-900">{pendingCount} bài chờ duyệt</span>}</div><ResourceStatus {...resource} />{error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+    <div id="community-reports" className="scroll-mt-6"><CommunityReportsPanel changed={resource.retry} /></div>
     <details className="rounded-xl border border-slate-200 bg-slate-50 p-3"><summary className="cursor-pointer text-sm font-semibold text-emerald-800">Đăng thông báo từ quản trị viên</summary><div className="mt-3 space-y-3">
     <textarea disabled={busy} className="w-full rounded border p-3 text-sm" value={content} onChange={event => setContent(event.target.value)} maxLength={5000} placeholder="Thông báo từ quản trị viên" />
     <input type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" multiple disabled={busy || !enabled} onChange={event => { const selected = Array.from(event.target.files || []); if (selected.length > 4) { setError('Mỗi bài tối đa 4 tệp.'); return } setFiles(selected); uploaded.current.clear(); tickets.current.clear() }} />

@@ -75,7 +75,7 @@ export default function AdminBookings() {
 
   return (
     <div className="space-y-8">
-      <BookingIncidentsPanel />
+      <div id="booking-incidents" className="scroll-mt-6"><BookingIncidentsPanel /></div>
       <ResourceStatus {...resource} />
       {/* Top Header Section */}
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">

@@ -19,6 +19,7 @@ export async function adminRequest<T>(service: string, path: string, method = 'G
     const problem = await response.json().catch(() => null)
     throw new Error(problem?.detail || 'Chưa xử lý được yêu cầu.')
   }
+  if (method !== 'GET' && !path.startsWith('/admin/inbox')) window.dispatchEvent(new Event('admin-data-changed'))
   return response.status === 204 ? undefined as T : response.json()
 }
 type RawCatalog = { categories: (Omit<Category, 'id'> & { id: number })[]; services: (Omit<Service, 'id' | 'categoryId' | 'dynamicFields'> & { id: number; categoryId: number; dynamicFields: (Omit<Service['dynamicFields'][number], 'id'> & { id: number })[] })[]; packages: (Omit<ServicePackage, 'id' | 'serviceId'> & { id: number; serviceId: number })[]; addOns: (Omit<AddOn, 'id' | 'serviceId'> & { id: number; serviceId: number })[] }

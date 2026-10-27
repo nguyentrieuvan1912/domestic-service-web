@@ -1,8 +1,9 @@
+import { useAdminRefresh } from '../../hooks/useAdminRefresh'
 import StaffProvisionDialog from '../../components/admin/StaffProvisionDialog'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Staff, StaffStatus } from '../../data/mockAdminStaff'
 import { getAdminStaff as getStaff, saveAdminStaff as saveStaffAccount, getAdminCatalog } from '../../api/operations'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Service } from '../../data/mockAdminServices'
 import StaffModal from '../../features/admin/staff/StaffModal'
 import StaffTable from '../../features/admin/staff/StaffTable'
@@ -24,16 +25,20 @@ export default function AdminStaff() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const focusStaffId = params.get('staffId')
+  const focusedStaff = useRef<string | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [attempt, setAttempt] = useState(0)
+  useAdminRefresh(() => setAttempt(value => value + 1), 30000)
   const [services, setServices] = useState<Service[]>([])
   useEffect(() => { void getAdminCatalog().then(data => setServices(data.services)).catch(cause => setError(cause.message)) }, [])
   useEffect(() => {
     let active = true
-    void getStaff(filterMonth).then(data => { if (active) { setStaffList(data); setError('') } }).catch(cause => { if (active) setError(cause.message) }).finally(() => { if (active) setLoading(false) })
+    void getStaff(filterMonth).then(data => { if (active) { setStaffList(data); setError(''); if (focusStaffId && focusedStaff.current !== focusStaffId) { const person = data.find(item => item.id === focusStaffId); if (person) { focusedStaff.current = focusStaffId; setEditingStaff(person); setIsModalOpen(true) } } } }).catch(cause => { if (active) setError(cause.message) }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [attempt,filterMonth])
+  }, [attempt,filterMonth,focusStaffId])
 
   // Advanced Filters State
   const [filterArea, setFilterArea] = useState('ALL')
