@@ -1,3 +1,4 @@
+import AdminAvatar from '../components/admin/AdminAvatar'
 import { AdminInboxContext } from '../components/admin/AdminInboxContext'
 import AdminInbox, { InboxBell } from '../components/admin/AdminInbox'
 import { useAdminInbox } from '../hooks/useAdminInbox'
@@ -135,7 +136,7 @@ export default function AdminLayout() {
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <InboxBell unread={inbox.snapshot.unread} open={inbox.openInbox} />
-            <div className="hidden h-9 w-9 sm:flex items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white shadow-sm leading-none">AD</div>
+            <AdminAvatar />
             <button
               type="button"
               onClick={handleLogout}

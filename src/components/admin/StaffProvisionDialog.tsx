@@ -1,11 +1,13 @@
+import AvatarPicker from '../common/AvatarPicker'
 import { useState, type FormEvent } from 'react'
 import { adminRequest } from '../../api/operations'
 export default function StaffProvisionDialog({ close, saved }: { close: () => void; saved: () => void }) {
+  const [avatar, setAvatar] = useState('')
   const [error,setError] = useState(''), [busy,setBusy] = useState(false)
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); if(busy)return
     const values = Object.fromEntries(new FormData(event.currentTarget)); setBusy(true); setError('')
-    try { await adminRequest('identity','/admin/staff','POST',{...values,experienceYears:Number(values.experienceYears||0)}); saved(); close() }
+    try { if (!avatar) throw new Error('Vui lòng chọn ảnh chân dung rõ mặt của nhân viên.'); await adminRequest('identity','/admin/staff','POST',{...values,avatar,experienceYears:Number(values.experienceYears||0)}); saved(); close() }
     catch(cause) { setError(cause instanceof Error ? cause.message : 'Chưa cấp được tài khoản.') }
     finally { setBusy(false) }
   }
@@ -13,6 +15,7 @@ export default function StaffProvisionDialog({ close, saved }: { close: () => vo
     <h2 className="font-bold text-xl">Cấp tài khoản sau tuyển dụng trực tiếp</h2>
     <p className="text-sm text-slate-500">Tài khoản Staff được lưu trên hệ thống. Kỹ năng được Admin xác nhận trong hồ sơ sau khi cấp.</p>
     {error && <p role="alert" className="text-red-600">{error}</p>}
+    <AvatarPicker value={avatar} onChange={setAvatar} disabled={busy} staff />
     {[['fullName','Họ tên','text'],['phone','Số điện thoại','tel'],['email','Email','email'],['identityCard','CCCD','text'],['dateOfBirth','Ngày sinh','date'],['password','Mật khẩu ban đầu (tối thiểu 8 ký tự)','password']].map(([name,label,type]) => <label className="block text-sm" key={name}>{label}<input className="border rounded p-2 w-full" name={name} type={type} required minLength={name==='password'?8:undefined} maxLength={name==='password'?72:160} autoComplete="off" /></label>)}
     <label className="block text-sm">Giới tính<select name="gender" className="border rounded p-2 w-full"><option value="FEMALE">Nữ</option><option value="MALE">Nam</option><option value="OTHER">Khác</option></select></label>
     <label className="block text-sm">Số năm kinh nghiệm<input name="experienceYears" type="number" min="0" max="80" step="0.5" defaultValue="0" className="border rounded p-2 w-full"/></label>

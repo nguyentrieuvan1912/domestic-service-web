@@ -1,3 +1,4 @@
+import AvatarPicker from '../../../components/common/AvatarPicker'
 import { useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import type { Candidate } from '../../../data/mockAdminCandidates'
@@ -41,16 +42,19 @@ export function OnboardingForm({ onSave }: OnboardingFormProps) { const document
 type TrainingFormProps = { onSave: (data: Partial<Candidate>) => Promise<void> }
 export function TrainingForm({ onSave }: TrainingFormProps) { const [score, setScore] = useState(''); const [notes, setNotes] = useState(''); return <FormShell submitLabel="Hoàn tất Đào tạo và chuyển sang Đánh giá" onSubmit={async (event) => { event.preventDefault(); await onSave({ status: 'EVALUATION', subStatus: 'Chờ xếp hạng', trainingScore: Number(score), trainingNotes: notes }) }}><div><label className={labelClassName}>Điểm đánh giá đào tạo</label><input required min="0" max="100" type="number" value={score} onChange={(event) => setScore(event.target.value)} className={inputClassName} placeholder="Nhập điểm từ 0 đến 100" /></div><div><label className={labelClassName}>Nhận xét kết quả đào tạo</label><textarea required rows={4} value={notes} onChange={(event) => setNotes(event.target.value)} className={`${inputClassName} resize-none`} placeholder="Nhập nhận xét kết quả đào tạo" /></div></FormShell> }
 
-type RankingFormProps = { candidate: Candidate; onProvision: (password: string, rank: string) => Promise<void> }
+type RankingFormProps = { candidate: Candidate; onProvision: (password: string, rank: string, avatar: string) => Promise<void> }
 export function RankingForm({ candidate, onProvision }: RankingFormProps) {
+  const [avatar, setAvatar] = useState('')
   const [rank, setRank] = useState('INTERN')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   return <FormShell submitLabel="Duyệt và tạo tài khoản nhân viên" onSubmit={async () => {
     if (password !== confirm) throw new Error('Mật khẩu xác nhận không khớp.')
-    await onProvision(password, rank)
+    if (!avatar) throw new Error('Vui lòng chọn ảnh chân dung rõ mặt của nhân viên.')
+    await onProvision(password, rank, avatar)
   }}><div className="rounded-xl bg-slate-100 p-4 text-sm"><p className="font-semibold text-slate-700">Kết quả đào tạo: {candidate.trainingScore ?? 'Chưa có'} điểm</p><p className="mt-2 text-slate-700">Nhận xét: {candidate.trainingNotes || 'Chưa có nhận xét'}</p></div>
     <p className="text-sm text-slate-600">Tài khoản đăng nhập: <strong>{candidate.email}</strong>. Cấp tài khoản sau khi xác nhận ứng viên đạt yêu cầu. Bàn giao mật khẩu cho nhân viên qua kênh nội bộ.</p>
+    <AvatarPicker value={avatar} onChange={setAvatar} staff />
     <label className={labelClassName}>Xếp hạng<select value={rank} onChange={event => setRank(event.target.value)} className={inputClassName}><option value="INTERN">Thực tập sinh</option><option value="STANDARD">Tiêu chuẩn</option><option value="PROFESSIONAL">Chuyên nghiệp</option></select></label>
     <label className={labelClassName}>Mật khẩu khởi tạo<input type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={password} onChange={event => setPassword(event.target.value)} className={inputClassName} /></label>
     <label className={labelClassName}>Xác nhận mật khẩu<input type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={confirm} onChange={event => setConfirm(event.target.value)} className={inputClassName} /></label>

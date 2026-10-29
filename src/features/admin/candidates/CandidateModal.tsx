@@ -2,7 +2,7 @@ import type { Candidate, CandidateStatus } from '../../../data/mockAdminCandidat
 import { candidateStatuses } from '../../../data/mockAdminCandidates'
 import { OnboardingForm, PendingForm, RankingForm, TrainingForm } from './CandidateForms'
 
-type CandidateModalProps = { candidate: Candidate; onClose: () => void; onUpdate: (candidate: Candidate) => Promise<void>; onProvision: (password: string, rank: string) => Promise<void> }
+type CandidateModalProps = { candidate: Candidate; onClose: () => void; onUpdate: (candidate: Candidate) => Promise<void>; onProvision: (password: string, rank: string, avatar: string) => Promise<void> }
 const statusStyles: Record<CandidateStatus, string> = { PENDING: 'bg-slate-100 text-slate-700', ONBOARDING: 'bg-blue-100 text-blue-700', TRAINING: 'bg-indigo-100 text-indigo-700', EVALUATION: 'bg-orange-100 text-orange-700' }
 
 export default function CandidateModal({ candidate, onClose, onUpdate, onProvision }: CandidateModalProps) {

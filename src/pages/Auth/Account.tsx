@@ -1,3 +1,4 @@
+import AvatarPicker from '../../components/common/AvatarPicker'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
@@ -7,14 +8,14 @@ import type { AccountUser } from '../../api/identity'
 
 export default function Account() {
   const { session, isAuthenticated, logout } = useIdentitySession('CUSTOMER')
-  const [user, setUser] = useState<AccountUser | null>(null)
+  const [user, setUser] = useState<(AccountUser & { avatar: string }) | null>(null)
   const [form, setForm] = useState({ fullName: '', phone: '' })
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   useEffect(() => {
     let active = true
-    if (session) void identityRequest<AccountUser>('/auth/profile', {}, 'CUSTOMER').then(value => {
+    if (session) void identityRequest<AccountUser & { avatar: string }>('/auth/profile', {}, 'CUSTOMER').then(value => {
       if (active) { setUser(value); setForm({ fullName: value.fullName, phone: value.phone }) }
     }).catch(cause => { if (active) setError(cause.message) })
     return () => { active = false }
@@ -25,7 +26,7 @@ export default function Account() {
     if (busy) return
     setBusy(true); setError(''); setMessage('')
     try {
-      const saved = await identityRequest<AccountUser>('/customer/profile', { method: 'PATCH', body: JSON.stringify(form) }, 'CUSTOMER')
+      const saved = await identityRequest<AccountUser & { avatar: string }>('/customer/profile', { method: 'PATCH', body: JSON.stringify(form) }, 'CUSTOMER')
       setUser(saved); setForm({ fullName: saved.fullName, phone: saved.phone }); setMessage('Đã lưu thông tin của bạn.')
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Chưa lưu được thông tin.') }
     finally { setBusy(false) }
@@ -33,6 +34,10 @@ export default function Account() {
   const input = 'mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-emerald-500'
   return <main className="bg-slate-50 px-5 py-16"><section className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"><h1 className="text-3xl font-bold text-slate-950">Tài khoản của tôi</h1>
     {error && <p role="alert" className="mt-4 text-red-600">{error}</p>}{message && <p role="status" className="mt-4 text-emerald-700">{message}</p>}
+    {user && <div className="mt-6"><AvatarPicker value={user.avatar} disabled={busy} onChange={async avatar => {
+      setBusy(true); setError(''); setMessage('')
+      try { const saved = await identityRequest<AccountUser & { avatar: string }>('/auth/avatar', { method: 'PATCH', body: JSON.stringify({ avatar }) }, 'CUSTOMER'); setUser(saved); setMessage('Đã cập nhật ảnh đại diện.') } finally { setBusy(false) }
+    }} /></div>}
     {user ? <form className="my-6 space-y-4" onSubmit={save}><fieldset disabled={busy} className="space-y-4">
       <label className="block text-sm text-slate-700">Họ và tên<input className={input} autoComplete="name" required maxLength={160} value={form.fullName} onChange={event => setForm(current => ({ ...current, fullName: event.target.value }))} /></label>
       <div className="text-sm text-slate-700">Gmail đã xác thực<p className="mt-2 font-semibold">{user.email}</p></div>

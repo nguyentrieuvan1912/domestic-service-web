@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../../../api/catalog'
+import AvatarPicker from '../../../components/common/AvatarPicker'
 import { adminRequest } from '../../../api/operations'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -242,7 +242,7 @@ export default function StaffModal({ period='CURRENT',
                     />
                   </div>
 
-                  <div>{draft.avatar&&<img alt="Ảnh đại diện nhân viên" className="mb-3 h-16 w-16 rounded-full" src={draft.avatar.startsWith('/')?API_BASE_URL+draft.avatar:draft.avatar}/>}<label className={labelClassName}>Ngày sinh</label><input type="date" min="1940-01-01" max={new Date(new Date().getFullYear()-18,new Date().getMonth(),new Date().getDate()).toLocaleDateString('sv-SE')} value={draft.dateOfBirth||''} onChange={event=>setDraft({...draft,dateOfBirth:event.target.value,birthYear:event.target.value?Number(event.target.value.slice(0,4)):draft.birthYear})} className={inputClassName}/>{!draft.dateOfBirth&&draft.birthYear&&<p className="mt-1 text-xs text-slate-500">Hồ sơ cũ chỉ có năm sinh {draft.birthYear}; bổ sung ngày/tháng khi có thông tin chính xác.</p>}</div>
+                  <div><AvatarPicker value={draft.avatar} disabled={saving} staff onChange={avatar => setDraft(previous => ({ ...previous, avatar }))} /><label className={labelClassName}>Ngày sinh</label><input type="date" min="1940-01-01" max={new Date(new Date().getFullYear()-18,new Date().getMonth(),new Date().getDate()).toLocaleDateString('sv-SE')} value={draft.dateOfBirth||''} onChange={event=>setDraft({...draft,dateOfBirth:event.target.value,birthYear:event.target.value?Number(event.target.value.slice(0,4)):draft.birthYear})} className={inputClassName}/>{!draft.dateOfBirth&&draft.birthYear&&<p className="mt-1 text-xs text-slate-500">Hồ sơ cũ chỉ có năm sinh {draft.birthYear}; bổ sung ngày/tháng khi có thông tin chính xác.</p>}</div>
                   <div><label className={labelClassName}>Giới tính</label><select value={draft.gender||'OTHER'} onChange={event=>setDraft({...draft,gender:event.target.value as Staff['gender']})} className={inputClassName}><option value="MALE">Nam</option><option value="FEMALE">Nữ</option><option value="OTHER">Khác</option></select></div>
                   <div><label className={labelClassName}>Số năm kinh nghiệm</label><input type="number" min="0" max="80" step="0.5" value={draft.experienceYears??0} onChange={event=>setDraft({...draft,experienceYears:Number(event.target.value)})} className={inputClassName}/></div>
                   <div><label className={labelClassName}>Giới thiệu</label><textarea value={draft.bio||''} maxLength={2000} onChange={event=>setDraft({...draft,bio:event.target.value})} className={inputClassName}/></div>
