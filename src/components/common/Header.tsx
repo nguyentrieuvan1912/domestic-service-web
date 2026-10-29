@@ -143,6 +143,9 @@ export default function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <Link to="/cooperation/staff" className="rounded-full bg-emerald-50 px-5 py-2.5 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100 border border-emerald-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">
+            Trở thành Đối tác
+          </Link>
           <Link to="/download" className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">
             Tải ứng dụng
           </Link>
@@ -193,9 +196,14 @@ export default function Header() {
               )}
             </div>
           ))}
-          <Link to="/download" onClick={closeNavigation} className="mt-4 block rounded-full bg-emerald-600 px-5 py-3 text-center text-sm font-bold text-white hover:bg-emerald-700">
-            Tải ứng dụng
-          </Link>
+          <div className="mt-4 flex flex-col gap-2">
+            <Link to="/cooperation/staff" onClick={closeNavigation} className="block rounded-full bg-emerald-50 px-5 py-3 text-center text-sm font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100">
+              Trở thành Đối tác
+            </Link>
+            <Link to="/download" onClick={closeNavigation} className="block rounded-full bg-emerald-600 px-5 py-3 text-center text-sm font-bold text-white hover:bg-emerald-700">
+              Tải ứng dụng
+            </Link>
+          </div>
         </nav>
       )}
     </header>

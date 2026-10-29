@@ -2,7 +2,7 @@ import { mockAdminServices } from './mockAdminServices'
 
 export type CandidateStatus = 'PENDING' | 'ONBOARDING' | 'TRAINING' | 'EVALUATION'
 export type CandidateGender = 'Nam' | 'Nữ' | 'Khác'
-export type CandidateSource = 'Website' | 'Google Forms' | 'Zalo' | 'Walk-in'
+export type CandidateSource = 'Website CleanMaster' | 'Website' | 'Facebook' | 'Người quen giới thiệu' | 'Khác' | 'Google Forms' | 'Zalo' | 'Walk-in'
 
 export interface Candidate {
   id: string
