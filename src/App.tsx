@@ -8,6 +8,7 @@ import AdminServices from './pages/Admin/Services'
 import About from './pages/About/About'
 import Blog from './pages/Blog/Blog'
 import Cooperation from './pages/Cooperation/Cooperation'
+import BecomePartner from './pages/Guest/BecomePartner'
 import Download from './pages/Download/Download'
 import Home from './pages/Home/Home'
 import Promotions from './pages/Promotions/Promotions'
@@ -36,7 +37,7 @@ function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/download" element={<Download />} />
           <Route path="/cooperation" element={<Cooperation />} />
-          <Route path="/cooperation/staff" element={<Cooperation />} />
+          <Route path="/cooperation/staff" element={<BecomePartner />} />
           <Route path="/promotions" element={<Promotions />} />
           <Route path="/services" element={<Services />} />
           <Route path="/services/add-ons" element={<AddOnServices />} />
