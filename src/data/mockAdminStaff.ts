@@ -12,6 +12,13 @@ export interface StaffViolation {
 }
 
 export interface Staff {
+  dateOfBirth?: string
+  birthYear?: number
+  gender?: 'MALE' | 'FEMALE' | 'OTHER'
+  experienceYears?: number
+  bio?: string
+  avatar?: string
+  email?: string
   id: string
   fullName: string
   phone: string
@@ -19,7 +26,7 @@ export interface Staff {
   status: StaffStatus
   statusNote: string
   rank: StaffLevel
-  baseFee: number
+  baseFee: number | null
   joinDate: string
   income: number
   averageRating: number

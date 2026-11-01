@@ -1,26 +1,21 @@
-import { useState } from 'react'
+import AvatarPicker from '../../../components/common/AvatarPicker'
+import { adminRequest } from '../../../api/operations'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { Service } from '../../../data/mockAdminServices'
 import type { Staff, StaffLevel, StaffStatus, StaffViolation } from '../../../data/mockAdminStaff'
-import { staffLevelFees, staffLevelLabels } from '../../../data/mockAdminStaff'
+import { staffLevelLabels } from '../../../data/mockAdminStaff'
 
 type StaffModalProps = {
+  period?: string
+  accountOnly?: boolean
   staff: Staff | null
   services: Service[]
   onClose: () => void
-  onSave: (staff: Staff) => void
+  onSave: (staff: Staff) => void | Promise<void>
 }
 
 type StaffTab = 'profile' | 'skills' | 'statistics' | 'violations'
-
-const areaOptions = [
-  { id: 'quan-1', name: 'Quận 1' },
-  { id: 'quan-2', name: 'Quận 2' },
-  { id: 'quan-3', name: 'Quận 3' },
-  { id: 'quan-7', name: 'Quận 7' },
-  { id: 'quan-tan-binh', name: 'Quận Tân Bình' },
-  { id: 'quan-binh-thanh', name: 'Quận Bình Thạnh' },
-]
 
 const tabs: { id: StaffTab; label: string }[] = [
   { id: 'profile', label: 'Hồ sơ & Trạng thái' },
@@ -44,7 +39,7 @@ const createDraft = (staff: Staff | null, services: Service[]): Staff =>
         status: 'ACTIVE',
         statusNote: '',
         rank: 'INTERN',
-        baseFee: staffLevelFees['INTERN'],
+        baseFee: null,
         joinDate: new Date().toLocaleDateString('vi-VN'),
         income: 0,
         averageRating: 5.0,
@@ -52,12 +47,13 @@ const createDraft = (staff: Staff | null, services: Service[]): Staff =>
         completedBookings: 0,
         cancelledBookings: 0,
         skillIds: services.slice(0, 2).map((service) => service.id),
-        areaIds: ['quan-1', 'quan-3'],
+        areaIds: [],
         violations: [],
       }
 
-export default function StaffModal({
+export default function StaffModal({ period='CURRENT',
   staff,
+  accountOnly = false,
   services,
   onClose,
   onSave,
@@ -65,6 +61,21 @@ export default function StaffModal({
   const isNew = !staff
   const [draft, setDraft] = useState<Staff>(() => createDraft(staff, services))
   const [activeTab, setActiveTab] = useState<StaffTab>('profile')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [areaOptions, setAreaOptions] = useState<{id: string; name: string}[]>([])
+  const [areaSearch, setAreaSearch] = useState('')
+  const [areaError, setAreaError] = useState('')
+  const normalizeArea = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().trim()
+  useEffect(() => {
+    if (accountOnly) return
+    let active = true
+    void adminRequest<{items: {id: number; name: string}[]}>('identity', '/administrative-units/hcm').then(data => {
+      if (active) { const options=data.items.map(unit => ({ id: unit.name, name: unit.name })).sort((a,b) => a.name.localeCompare(b.name, 'vi')); setAreaOptions(options); setDraft(previous => ({ ...previous, areaIds: previous.areaIds.filter(id => options.some(area => area.id === id)) })); }
+    }).catch(cause => { if (active) setAreaError(cause instanceof Error ? cause.message : 'Chưa tải được phường/xã.') })
+    return () => { active = false }
+  }, [accountOnly])
+  const visibleAreas = areaOptions.filter(area => normalizeArea(area.name).includes(normalizeArea(areaSearch)))
 
   // Form states for new violation
   const [violationReason, setViolationReason] = useState('Hủy lịch phút chót')
@@ -100,7 +111,7 @@ export default function StaffModal({
     setDraft((prev) => ({
       ...prev,
       rank,
-      baseFee: staffLevelFees[rank],
+      baseFee: null,
     }))
   }
 
@@ -130,9 +141,11 @@ export default function StaffModal({
     setViolationPenalty('')
   }
 
-  const handleSave = (e: FormEvent) => {
+  const handleSave = async (e: FormEvent) => {
     e.preventDefault()
-    onSave(draft)
+    if (saving) return
+    setSaving(true); setError('')
+    try { await onSave(draft) } catch (cause) { setError(cause instanceof Error ? cause.message : 'Không thể lưu tài khoản.'); setSaving(false) }
   }
 
   return (
@@ -196,6 +209,8 @@ export default function StaffModal({
 
         {/* Form & Tab Content Body */}
         <form onSubmit={handleSave} className="flex min-h-0 flex-1 flex-col">
+          {error && <p role="alert" className="px-6 py-3 text-red-600">{error}</p>}
+          {accountOnly && activeTab !== 'profile' && <p className="px-6 py-6 text-slate-500">Dữ liệu này sẽ hiển thị khi kết nối nghiệp vụ Booking/Finance.</p>}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
             {/* TAB 1: Hồ sơ & Trạng thái */}
             {activeTab === 'profile' && (
@@ -227,10 +242,15 @@ export default function StaffModal({
                     />
                   </div>
 
+                  <div><AvatarPicker value={draft.avatar} disabled={saving} staff onChange={avatar => setDraft(previous => ({ ...previous, avatar }))} /><label className={labelClassName}>Ngày sinh</label><input type="date" min="1940-01-01" max={new Date(new Date().getFullYear()-18,new Date().getMonth(),new Date().getDate()).toLocaleDateString('sv-SE')} value={draft.dateOfBirth||''} onChange={event=>setDraft({...draft,dateOfBirth:event.target.value,birthYear:event.target.value?Number(event.target.value.slice(0,4)):draft.birthYear})} className={inputClassName}/>{!draft.dateOfBirth&&draft.birthYear&&<p className="mt-1 text-xs text-slate-500">Hồ sơ cũ chỉ có năm sinh {draft.birthYear}; bổ sung ngày/tháng khi có thông tin chính xác.</p>}</div>
+                  <div><label className={labelClassName}>Giới tính</label><select value={draft.gender||'OTHER'} onChange={event=>setDraft({...draft,gender:event.target.value as Staff['gender']})} className={inputClassName}><option value="MALE">Nam</option><option value="FEMALE">Nữ</option><option value="OTHER">Khác</option></select></div>
+                  <div><label className={labelClassName}>Số năm kinh nghiệm</label><input type="number" min="0" max="80" step="0.5" value={draft.experienceYears??0} onChange={event=>setDraft({...draft,experienceYears:Number(event.target.value)})} className={inputClassName}/></div>
+                  <div><label className={labelClassName}>Giới thiệu</label><textarea value={draft.bio||''} maxLength={2000} onChange={event=>setDraft({...draft,bio:event.target.value})} className={inputClassName}/></div>
                   <div>
                     <label className={labelClassName}>Số CCCD / Định danh</label>
                     <input
                       required
+                      readOnly={accountOnly}
                       value={draft.identityCard}
                       onChange={(e) => setDraft({ ...draft, identityCard: e.target.value })}
                       className={inputClassName}
@@ -263,7 +283,7 @@ export default function StaffModal({
                     <label className={labelClassName}>Mức phí cơ bản (Base Fee)</label>
                     <input
                       readOnly
-                      value={`${new Intl.NumberFormat('vi-VN').format(draft.baseFee)} VNĐ/giờ`}
+                      value={draft.baseFee == null ? 'Chưa cấu hình mức lương theo cấp bậc' : `${new Intl.NumberFormat('vi-VN').format(draft.baseFee)} VNĐ/giờ`}
                       className={`${inputClassName} bg-slate-50 font-semibold text-emerald-700`}
                     />
                   </div>
@@ -309,7 +329,7 @@ export default function StaffModal({
             )}
 
             {/* TAB 2: Kỹ năng & Khu vực */}
-            {activeTab === 'skills' && (
+            {!accountOnly && activeTab === 'skills' && (
               <section className="space-y-6">
                 <div>
                   <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
@@ -353,10 +373,12 @@ export default function StaffModal({
 
                 <div className="border-t border-slate-200 pt-5">
                   <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
-                    Khu vực hoạt động
+                    Phường/xã hoạt động
                   </h3>
-                  <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-                    {areaOptions.map((area) => {
+                  <input className={inputClassName + ' mt-3'} aria-label="Tìm phường/xã hoạt động" placeholder="Nhập tên phường/xã, có hoặc không dấu" value={areaSearch} onChange={event => setAreaSearch(event.target.value)} />
+                  {areaError && <p role="alert" className="mt-2 text-sm text-red-600">{areaError}</p>}
+                  <div className="mt-3 grid max-h-80 gap-2.5 overflow-y-auto sm:grid-cols-2">
+                    {visibleAreas.map((area) => {
                       const isChecked = draft.areaIds.includes(area.id)
                       return (
                         <label
@@ -383,7 +405,7 @@ export default function StaffModal({
             )}
 
             {/* TAB 3: Thống kê */}
-            {activeTab === 'statistics' && (
+            {!accountOnly && activeTab === 'statistics' && (
               <section className="space-y-6">
                 <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
                   Chỉ số hiệu suất & Thu nhập
@@ -529,20 +551,11 @@ export default function StaffModal({
 
                     <button
                       type="button"
-                      onClick={() => {
-                        const totalBonus =
-                          (selectedBonuses.tripsBonus ? 500000 : 0) +
-                          (selectedBonuses.incomeBonus ? 1000000 : 0) +
-                          (selectedBonuses.ratingBonus ? 300000 : 0)
-
-                        setRewardSavedMessage(
-                          totalBonus > 0
-                            ? `✨ Đã ghi nhận thưởng ${new Intl.NumberFormat(
-                                'vi-VN'
-                              ).format(totalBonus)}đ!`
-                            : 'Đã cập nhật trạng thái thưởng'
-                        )
-                        setTimeout(() => setRewardSavedMessage(null), 3500)
+                      onClick={async () => {
+                        setSaving(true); setError('');
+                        try { await adminRequest('finance', '/admin/staff/' + draft.id + '/rewards', 'POST', {...selectedBonuses,period}); setRewardSavedMessage('Đã lưu đề xuất thưởng, chờ phê duyệt'); }
+                        catch (cause) { setError(cause instanceof Error ? cause.message : 'Chưa lưu được đề xuất thưởng.'); }
+                        finally { setSaving(false); }
                       }}
                       className="rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-600 active:scale-95 text-center"
                     >
@@ -554,7 +567,7 @@ export default function StaffModal({
             )}
 
             {/* TAB 4: Vi phạm & Kỷ luật */}
-            {activeTab === 'violations' && (
+            {!accountOnly && activeTab === 'violations' && (
               <section className="space-y-6">
                 {/* Form Ghi nhận vi phạm mới */}
                 <div className="rounded-xl border border-rose-200 bg-rose-50/30 p-4 shadow-sm">
@@ -648,6 +661,7 @@ export default function StaffModal({
             </button>
             <button
               type="submit"
+              disabled={saving || (accountOnly && activeTab !== 'profile')}
               className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
             >
               Lưu thay đổi

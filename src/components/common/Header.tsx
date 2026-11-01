@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useIdentitySession } from '../../hooks/useIdentitySession'
 
 type NavigationItem = {
   label: string
@@ -56,6 +57,7 @@ function ChevronIcon({ open = false }: { open?: boolean }) {
 }
 
 export default function Header() {
+  const { isAuthenticated } = useIdentitySession('CUSTOMER')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const headerRef = useRef<HTMLElement>(null)
@@ -146,6 +148,9 @@ export default function Header() {
           <Link to="/cooperation/staff" className="rounded-full bg-emerald-50 px-5 py-2.5 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100 border border-emerald-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">
             Trở thành Đối tác
           </Link>
+          <Link to={isAuthenticated ? '/account' : '/login'} className="text-sm font-semibold text-slate-700 hover:text-emerald-700">
+            {isAuthenticated ? 'Tài khoản' : 'Đăng nhập'}
+          </Link>
           <Link to="/download" className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">
             Tải ứng dụng
           </Link>
@@ -166,6 +171,7 @@ export default function Header() {
 
       {mobileOpen && (
         <nav aria-label="Điều hướng mobile" className="border-t border-slate-100 bg-white px-5 py-3 lg:hidden">
+          <Link to={isAuthenticated ? '/account' : '/login'} onClick={closeNavigation} className="block py-3 font-semibold text-emerald-700">{isAuthenticated ? 'Tài khoản' : 'Đăng nhập / Đăng ký'}</Link>
           {navigationItems.map((item) => (
             <div key={item.label} className="border-b border-slate-100 last:border-b-0">
               {item.children ? (

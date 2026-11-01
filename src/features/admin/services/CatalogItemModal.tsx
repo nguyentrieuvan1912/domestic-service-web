@@ -10,7 +10,7 @@ type CatalogItemModalProps = {
   item: CatalogItem | null
   services: Service[]
   onClose: () => void
-  onSave: (item: CatalogItem) => void
+  onSave: (item: CatalogItem) => void | Promise<void>
 }
 
 const inputClassName = 'w-full bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 transition-colors'
@@ -30,12 +30,16 @@ const createDraft = (mode: CatalogMode, item: CatalogItem | null, services: Serv
 
 export default function CatalogItemModal({ mode, item, services, onClose, onSave }: CatalogItemModalProps) {
   const [draft, setDraft] = useState(() => createDraft(mode, item, services))
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const isCategory = mode === 'category'
   const serviceItem = draft as ServicePackage | AddOn
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    onSave(draft)
+    if (saving) return
+    setSaving(true); setError('')
+    try { await onSave(draft) } catch (cause) { setError(cause instanceof Error ? cause.message : 'Chưa lưu được dữ liệu.') } finally { setSaving(false) }
   }
 
   return (
@@ -47,6 +51,7 @@ export default function CatalogItemModal({ mode, item, services, onClose, onSave
           <button type="button" onClick={onClose} aria-label="Đóng cửa sổ" className="flex h-9 w-9 items-center justify-center rounded-full text-2xl leading-none text-slate-400 transition hover:bg-slate-200 hover:text-slate-900">×</button>
         </header>
         <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
+          {error && <p role="alert" className="px-6 py-3 text-sm text-red-600">{error}</p>}
           <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
             <div><label className={labelClassName}>Tên</label><input required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} className={inputClassName} placeholder={`Nhập tên ${titles[mode]}`} /></div>
             <div><label className={labelClassName}>Mô tả</label><textarea required value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} rows={4} className={`${inputClassName} resize-none`} placeholder={`Nhập mô tả ${titles[mode]}`} /></div>
@@ -55,7 +60,7 @@ export default function CatalogItemModal({ mode, item, services, onClose, onSave
               <div className="grid gap-4 sm:grid-cols-2"><div><label className={labelClassName}>Giá tiền</label><input required min="0" type="number" value={serviceItem.price} onChange={(event) => setDraft({ ...draft, price: Number(event.target.value) })} className={inputClassName} placeholder="Nhập giá tiền" /></div><div><label className={labelClassName}>Thời lượng</label><input required value={serviceItem.duration} onChange={(event) => setDraft({ ...draft, duration: event.target.value })} className={inputClassName} placeholder="Ví dụ: 2 giờ" /></div></div>
             </>}
           </div>
-          <footer className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4"><button type="button" onClick={onClose} className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Hủy bỏ</button><button type="submit" className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">Lưu thay đổi</button></footer>
+          <footer className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4"><button type="button" onClick={onClose} className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Hủy bỏ</button><button disabled={saving} type="submit" className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">Lưu thay đổi</button></footer>
         </form>
       </section>
     </>

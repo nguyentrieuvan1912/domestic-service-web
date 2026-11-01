@@ -9,7 +9,7 @@ import {
 type CustomerModalProps = {
   customer: Customer
   onClose: () => void
-  onSaveCustomer: (updated: Customer) => void
+  onSaveCustomer: (updated: Customer) => Promise<void>
 }
 
 type ModalTab = 'overview' | 'history'
@@ -25,6 +25,8 @@ export default function CustomerModal({
 }: CustomerModalProps) {
   const [draft, setDraft] = useState<Customer>(() => ({ ...customer }))
   const [activeTab, setActiveTab] = useState<ModalTab>('overview')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   const handleStatusChange = (status: CustomerStatus) => {
     setDraft((prev) => ({
@@ -34,9 +36,12 @@ export default function CustomerModal({
     }))
   }
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    onSaveCustomer(draft)
+    if (saving) return
+    setSaving(true); setError('')
+    try { await onSaveCustomer(draft) }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Không thể lưu tài khoản.'); setSaving(false) }
   }
 
   return (
@@ -113,6 +118,7 @@ export default function CustomerModal({
 
         {/* Form & Body Content */}
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          {error && <p role="alert" className="px-6 py-3 text-red-600">{error}</p>}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
             {/* TAB 1: Thông tin & Tổng quan */}
             {activeTab === 'overview' && (
@@ -134,7 +140,7 @@ export default function CustomerModal({
                       Tổng chi tiêu tích lũy
                     </p>
                     <p className="mt-2 text-2xl font-extrabold text-emerald-800">
-                      {new Intl.NumberFormat('vi-VN').format(draft.totalSpent)}đ
+                      {draft.totalSpent === null ? 'Chưa có dữ liệu' : `${new Intl.NumberFormat('vi-VN').format(draft.totalSpent)}đ`}
                     </p>
                     <p className="mt-1 text-xs text-emerald-600">Đã thanh toán trên hệ thống</p>
                   </div>
@@ -208,6 +214,7 @@ export default function CustomerModal({
                       className={`${inputClassName} font-semibold`}
                     >
                       <option value="ACTIVE">🟢 ACTIVE - Đang hoạt động bình thường</option>
+                      <option value="INACTIVE">INACTIVE - Chưa kích hoạt</option>
                       <option value="LOCKED">🔴 LOCKED - Bị khóa / Hạn chế truy cập</option>
                     </select>
                   </div>
@@ -294,9 +301,10 @@ export default function CustomerModal({
             </button>
             <button
               type="submit"
+              disabled={saving}
               className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition"
             >
-              Lưu thay đổi
+              {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
             </button>
           </footer>
         </form>

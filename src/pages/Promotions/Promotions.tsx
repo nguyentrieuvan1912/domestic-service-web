@@ -1,6 +1,8 @@
+import CatalogState from '../../components/common/CatalogState'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { promotions, type Promotion } from '../../data/promotions'
+import { usePromotions } from '../../hooks/usePromotions'
+import type { Promotion } from '../../data/promotions'
 
 function AppDownloadModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
@@ -58,12 +60,13 @@ function PromotionCard({ promotion, onUse }: { promotion: Promotion; onUse: () =
 }
 
 export default function Promotions() {
+  const { promotions, loading, error, retry } = usePromotions()
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
     <div className="bg-slate-50">
       <section className="bg-[#f3faf7] px-5 py-16 sm:py-20 lg:px-8"><div className="mx-auto max-w-7xl"><p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Ưu đãi CleanMaster</p><h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">Chăm sóc tổ ấm, nhận thêm nhiều niềm vui.</h1><p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">Lưu lại mã ưu đãi yêu thích và dùng ngay trên Mobile App khi bạn sẵn sàng đặt dịch vụ.</p></div></section>
-      <main className="mx-auto max-w-7xl px-5 py-14 sm:py-20 lg:px-8"><div className="grid gap-7 md:grid-cols-2">{promotions.map((promotion) => <PromotionCard key={promotion.id} promotion={promotion} onUse={() => setIsModalOpen(true)} />)}</div><div className="mt-12 rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm leading-6 text-slate-600">Mã ưu đãi chỉ được áp dụng theo điều kiện tương ứng và xác nhận trên Mobile App.</div></main>
+      <main className="mx-auto max-w-7xl px-5 py-14 sm:py-20 lg:px-8"><div className="grid gap-7 md:grid-cols-2">{(loading || error) && <CatalogState loading={loading} error={error} onRetry={retry} />}{!loading && !error && promotions.length === 0 && <p className="text-slate-600">Chưa có ưu đãi đang áp dụng.</p>}{promotions.map((promotion) => <PromotionCard key={promotion.id} promotion={promotion} onUse={() => setIsModalOpen(true)} />)}</div><div className="mt-12 rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm leading-6 text-slate-600">Mã ưu đãi chỉ được áp dụng theo điều kiện tương ứng và xác nhận trên Mobile App.</div></main>
       {isModalOpen && <AppDownloadModal onClose={() => setIsModalOpen(false)} />}
     </div>
   )

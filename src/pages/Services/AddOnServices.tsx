@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { addOnPricingNote, addOnServices, type AddOnSlug } from '../../data/addons'
+import type { AddOnService, AddOnSlug } from '../../data/addons'
+import { money, type CatalogDetail, type CatalogPage } from '../../api/catalog'
+import { useCatalogResource } from '../../hooks/useCatalogResource'
+import CatalogState from '../../components/common/CatalogState'
+
+const tabs: { slug: AddOnSlug; shortName: string; pattern: RegExp }[] = [
+  { slug: 'sofa', shortName: 'Sofa', pattern: /sofa/i }, { slug: 'curtain', shortName: 'Rèm', pattern: /rèm|rem/i },
+  { slug: 'mattress', shortName: 'Nệm', pattern: /nệm|nem/i }, { slug: 'carpet', shortName: 'Thảm', pattern: /thảm|tham/i },
+]
+const addOnPricingNote = 'Giá tham khảo theo danh mục hiện hành; mức phí cuối cùng được xác nhận khi đặt dịch vụ.'
 
 function AppDownloadModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
@@ -45,12 +54,13 @@ function CompactList({ items }: { items: string[] }) {
   )
 }
 
-function PricingBox({ service, onBook }: { service: typeof addOnServices[number]; onBook: () => void }) {
+function PricingBox({ service, onBook }: { service: AddOnService; onBook: () => void }) {
   return (
     <aside className="sticky top-28 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Bảng giá tham khảo</p>
       <h2 className="mt-2 text-lg font-bold text-slate-900">{service.pricingType}</h2>
       <div className="mt-3">
+        {service.pricing.length === 0 && <p className="text-sm text-slate-500">Chưa có bảng giá cho hạng mục này.</p>}
         {service.pricing.map((price) => (
           <div key={price.label} className="flex items-center justify-between gap-3 border-b border-gray-200 py-2 last:border-0">
             <div>
@@ -70,7 +80,25 @@ function PricingBox({ service, onBook }: { service: typeof addOnServices[number]
 export default function AddOnServices() {
   const [activeTab, setActiveTab] = useState<AddOnSlug>('sofa')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const activeService = addOnServices.find((service) => service.slug === activeTab) ?? addOnServices[0]
+  const catalog = useCatalogResource<CatalogPage>('/services?size=100')
+  const serviceId = catalog.data?.items.find(item => item.serviceType === 'CLEANING_UPHOLSTERY')?.id
+  return <AddOnContent key={serviceId || 'loading'} activeTab={activeTab} setActiveTab={setActiveTab}
+    serviceId={serviceId} catalog={catalog} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} />
+}
+
+function AddOnContent({ activeTab, setActiveTab, serviceId, catalog, isModalOpen, setIsModalOpen }: {
+  activeTab: AddOnSlug; setActiveTab: (tab: AddOnSlug) => void; serviceId?: number;
+  catalog: ReturnType<typeof useCatalogResource<CatalogPage>>; isModalOpen: boolean; setIsModalOpen: (value: boolean) => void;
+}) {
+  const detail = useCatalogResource<CatalogDetail>(`/services/${serviceId || 0}`)
+  const tab = tabs.find(item => item.slug === activeTab)!
+  const data = detail.data
+  const activeService: AddOnService | null = data ? {
+    id: String(data.service.id), slug: activeTab, shortName: tab.shortName, name: `Vệ sinh ${tab.shortName}`,
+    description: data.service.description || '', imageUrl: data.service.imageUrl || '',
+    benefits: data.benefits, process: data.workflow, pricingType: 'Theo gói dịch vụ',
+    pricing: data.packages.filter(pkg => tab.pattern.test(pkg.name)).map(pkg => ({ label: pkg.name, price: money(pkg.basePrice), note: pkg.description || `${pkg.durationMinutes} phút` })),
+  } : null
 
   return (
     <div className="bg-white text-slate-900">
@@ -79,7 +107,7 @@ export default function AddOnServices() {
           <h1 className="text-3xl font-bold tracking-tight">Vệ sinh Sofa - Rèm - Nệm - Thảm</h1>
           <p className="mt-2 text-sm text-slate-600">Dịch vụ vệ sinh bổ sung cho những bề mặt thường xuyên sử dụng trong gia đình.</p>
           <nav className="mt-5 flex gap-4 overflow-x-auto border-b border-gray-200" aria-label="Danh mục dịch vụ bổ sung">
-            {addOnServices.map((service) => {
+            {tabs.map((service) => {
               const isActive = service.slug === activeTab
               return <button key={service.slug} type="button" role="tab" aria-selected={isActive} onClick={() => setActiveTab(service.slug)} className={`shrink-0 border-b-2 px-1 pb-3 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${isActive ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:border-blue-300 hover:text-blue-600'}`}>{service.shortName}</button>
             })}
@@ -88,7 +116,9 @@ export default function AddOnServices() {
       </header>
 
       <main className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8">
-        <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-12">
+        {catalog.loading || catalog.error || !serviceId || detail.loading || detail.error ?
+          <CatalogState loading={catalog.loading || (!!serviceId && detail.loading)} error={catalog.error || (serviceId ? detail.error : '')} onRetry={() => { catalog.retry(); detail.retry() }} /> : null}
+        {activeService && <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-12">
           <section className="md:col-span-7">
             <img src={activeService.imageUrl} alt={activeService.name} className="w-full aspect-[7/3] object-cover rounded-xl shadow-sm bg-slate-100" />
             <h2 className="mt-5 text-2xl font-bold text-slate-900">{activeService.name}</h2>
@@ -105,7 +135,7 @@ export default function AddOnServices() {
           <section className="md:col-span-5">
             <PricingBox service={activeService} onBook={() => setIsModalOpen(true)} />
           </section>
-        </div>
+        </div>}
       </main>
 
       {isModalOpen && <AppDownloadModal onClose={() => setIsModalOpen(false)} />}

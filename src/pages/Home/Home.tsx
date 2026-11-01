@@ -1,6 +1,11 @@
 import { Link } from 'react-router-dom'
-import { promotions } from '../../data/promotions'
-import { servicePackages } from '../../data/services'
+import { usePromotions } from '../../hooks/usePromotions'
+
+import { servicePackages as templates } from '../../data/services'
+import { type CatalogPage } from '../../api/catalog'
+import { webCatalogView } from '../../api/catalog-view'
+import { useCatalogResource } from '../../hooks/useCatalogResource'
+import CatalogState from '../../components/common/CatalogState'
 
 const processSteps = [
   { number: '01', title: 'Chọn dịch vụ', description: 'Chọn gói dọn dẹp phù hợp với nhu cầu của gia đình.' },
@@ -35,6 +40,13 @@ function ArrowIcon() {
 }
 
 export default function Home() {
+  const promotionResult = usePromotions()
+  const { promotions } = promotionResult
+  const result = useCatalogResource<CatalogPage>('/services?size=100')
+  const servicePackages = templates.flatMap(template => {
+    const item = result.data?.items.find(service => service.code === template.code)
+    return item ? [webCatalogView(item)] : []
+  })
   return (
     <div className="overflow-hidden bg-white">
       <section className="relative isolate bg-[#f3faf7]">
@@ -101,6 +113,7 @@ export default function Home() {
       <section className="bg-slate-50 px-5 py-20 sm:py-24 lg:px-8">
         <SectionHeading eyebrow="Dịch vụ nổi bật" title="Chọn cách chăm sóc nhà phù hợp" description="Các gói dịch vụ được thiết kế cho những nhu cầu phổ biến của gia đình hiện đại." />
         <div className="mx-auto mt-12 grid max-w-7xl gap-6 lg:grid-cols-3">
+          {(result.loading || result.error) && <CatalogState loading={result.loading} error={result.error} onRetry={result.retry} />}
           {servicePackages.map((service) => (
             <article key={service.id} className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/10">
               <div className="relative overflow-hidden"><img src={service.imageUrl} alt={service.name} className="aspect-[1.65/1] w-full object-cover transition duration-500 group-hover:scale-105" /><span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-emerald-700">CleanMaster</span></div>
@@ -123,7 +136,7 @@ export default function Home() {
         <div className="mx-auto mt-12 grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3">{benefits.map((benefit) => <div key={benefit.title} className="flex gap-4 rounded-2xl bg-white p-5 ring-1 ring-emerald-900/5"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-sm font-black text-emerald-700">{benefit.mark}</span><div><h3 className="font-bold text-slate-900">{benefit.title}</h3><p className="mt-1 text-sm leading-6 text-slate-600">{benefit.description}</p></div></div>)}</div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:py-24 lg:px-8"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Ưu đãi nổi bật</p><h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Bắt đầu thật dễ dàng</h2></div><Link to="/promotions" className="font-bold text-emerald-700 hover:text-emerald-800">Xem tất cả ưu đãi →</Link></div><div className="mt-10 grid gap-5 md:grid-cols-2">{promotions.map((promotion) => <article key={promotion.id} className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${promotion.tone} p-7 text-white sm:p-9`}><span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-bold">Đến {new Date(promotion.endsAt).toLocaleDateString('vi-VN')}</span><p className="mt-7 text-4xl font-black tracking-tight">{promotion.discountLabel}</p><h3 className="mt-2 text-xl font-bold">{promotion.title}</h3><p className="mt-3 max-w-sm text-sm leading-6 text-white/75">{promotion.description}</p><Link to="/download" className="mt-7 inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-emerald-50">Dùng ưu đãi</Link></article>)}</div></section>
+      <section className="mx-auto max-w-7xl px-5 py-20 sm:py-24 lg:px-8"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Ưu đãi nổi bật</p><h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Bắt đầu thật dễ dàng</h2></div><Link to="/promotions" className="font-bold text-emerald-700 hover:text-emerald-800">Xem tất cả ưu đãi →</Link></div><div className="mt-10 grid gap-5 md:grid-cols-2">{(promotionResult.loading || promotionResult.error) && <CatalogState loading={promotionResult.loading} error={promotionResult.error} onRetry={promotionResult.retry} />}{!promotionResult.loading && !promotionResult.error && promotions.length === 0 && <p className="text-slate-600">Chưa có ưu đãi đang áp dụng.</p>}{promotions.map((promotion) => <article key={promotion.id} className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${promotion.tone} p-7 text-white sm:p-9`}><span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-bold">Đến {new Date(promotion.endsAt).toLocaleDateString('vi-VN')}</span><p className="mt-7 text-4xl font-black tracking-tight">{promotion.discountLabel}</p><h3 className="mt-2 text-xl font-bold">{promotion.title}</h3><p className="mt-3 max-w-sm text-sm leading-6 text-white/75">{promotion.description}</p><Link to="/download" className="mt-7 inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-emerald-50">Dùng ưu đãi</Link></article>)}</div></section>
 
       <section className="bg-slate-950 px-5 py-20 text-white sm:py-24 lg:px-8"><div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1fr_0.9fr]"><div><p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-300">Ứng dụng CleanMaster</p><h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Đặt lịch chăm sóc nhà ngay trong lòng bàn tay.</h2><p className="mt-5 max-w-lg leading-7 text-slate-400">Tải ứng dụng để xem dịch vụ, chọn lịch thuận tiện và quản lý trải nghiệm của bạn ở một nơi.</p><div className="mt-8 flex flex-wrap gap-3"><Link to="/download" className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-950 hover:bg-emerald-50">App Store</Link><Link to="/download" className="rounded-xl border border-slate-700 px-5 py-3 text-sm font-bold text-white hover:border-emerald-400">Google Play</Link></div></div><div className="flex items-center justify-center gap-6 sm:justify-end"><div className="flex h-36 w-36 items-center justify-center rounded-2xl bg-white p-3 text-center text-sm font-black text-slate-950 shadow-2xl">QR<br />PLACEHOLDER</div><div className="hidden max-w-[150px] text-sm leading-6 text-slate-400 sm:block">Quét mã để tải ứng dụng CleanMaster</div></div></div></section>
 

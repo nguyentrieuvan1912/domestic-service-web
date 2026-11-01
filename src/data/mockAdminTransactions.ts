@@ -16,6 +16,7 @@ export interface Transaction {
   amount: number
   type: TransactionType
   status: TransactionStatus
+  rawStatus?: string
   paymentMethod: PaymentMethod
   platformFee: number
   createdAt: string

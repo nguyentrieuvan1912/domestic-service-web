@@ -5,12 +5,15 @@ export type CandidateGender = 'Nam' | 'Nữ' | 'Khác'
 export type CandidateSource = 'Website CleanMaster' | 'Website' | 'Facebook' | 'Người quen giới thiệu' | 'Khác' | 'Google Forms' | 'Zalo' | 'Walk-in'
 
 export interface Candidate {
+  staffId?: string
   id: string
   fullName: string
   phone: string
   email: string
   cccd: string
   birthYear: number
+  dateOfBirth?: string
+  experienceYears?: number
   gender: CandidateGender
   area: string
   source: CandidateSource

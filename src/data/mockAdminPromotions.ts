@@ -10,7 +10,7 @@ export interface Promotion {
   maxDiscount?: number
   validFrom: string
   validTo: string
-  usageLimit: number
+  usageLimit: number | null
   usedCount: number
   status: PromotionStatus
 }
