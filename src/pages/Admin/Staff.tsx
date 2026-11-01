@@ -2,7 +2,8 @@ import { useAdminRefresh } from '../../hooks/useAdminRefresh'
 import StaffProvisionDialog from '../../components/admin/StaffProvisionDialog'
 import { useEffect, useRef, useState } from 'react'
 import type { Staff, StaffStatus } from '../../data/mockAdminStaff'
-import { getAdminStaff as getStaff, saveAdminStaff as saveStaffAccount, getAdminCatalog } from '../../api/operations'
+import { getAdminCatalog } from '../../api/operations'
+import { getAdminStaffList, saveAdminStaff } from '../../services/admin/staff.service'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Service } from '../../data/mockAdminServices'
 import StaffModal from '../../features/admin/staff/StaffModal'
@@ -17,8 +18,8 @@ const tabs: { id: StaffTab; label: string }[] = [
 ]
 
 export default function AdminStaff() {
-  const [provisionOpen,setProvisionOpen]=useState(false)
-  const [filterMonth,setFilterMonth]=useState('CURRENT')
+  const [provisionOpen, setProvisionOpen] = useState(false)
+  const [filterMonth, setFilterMonth] = useState('CURRENT')
   const [activeTab, setActiveTab] = useState<StaffTab>('ACTIVE')
   const [staffList, setStaffList] = useState<Staff[]>([])
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null)
@@ -31,14 +32,41 @@ export default function AdminStaff() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [attempt, setAttempt] = useState(0)
-  useAdminRefresh(() => setAttempt(value => value + 1), 30000)
+  useAdminRefresh(() => setAttempt((value) => value + 1), 30000)
   const [services, setServices] = useState<Service[]>([])
-  useEffect(() => { void getAdminCatalog().then(data => setServices(data.services)).catch(cause => setError(cause.message)) }, [])
+  useEffect(() => {
+    void getAdminCatalog()
+      .then((data) => setServices(data.services))
+      .catch((cause) => setError(cause.message))
+  }, [])
   useEffect(() => {
     let active = true
-    void getStaff(filterMonth).then(data => { if (active) { setStaffList(data); setError(''); if (focusStaffId && focusedStaff.current !== focusStaffId) { const person = data.find(item => item.id === focusStaffId); if (person) { focusedStaff.current = focusStaffId; setEditingStaff(person); setIsModalOpen(true) } } } }).catch(cause => { if (active) setError(cause.message) }).finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
-  }, [attempt,filterMonth,focusStaffId])
+    setLoading(true)
+    void getAdminStaffList(filterMonth)
+      .then((data) => {
+        if (active) {
+          setStaffList(data)
+          setError('')
+          if (focusStaffId && focusedStaff.current !== focusStaffId) {
+            const person = data.find((item) => item.id === focusStaffId)
+            if (person) {
+              focusedStaff.current = focusStaffId
+              setEditingStaff(person)
+              setIsModalOpen(true)
+            }
+          }
+        }
+      })
+      .catch((cause) => {
+        if (active) setError(cause.message)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [attempt, filterMonth, focusStaffId])
 
   // Advanced Filters State
   const [filterArea, setFilterArea] = useState('ALL')
@@ -67,8 +95,8 @@ export default function AdminStaff() {
     })
 
   const saveStaff = async (member: Staff) => {
-    await saveStaffAccount(member)
-    setStaffList(await getStaff(filterMonth))
+    await saveAdminStaff(member)
+    setStaffList(await getAdminStaffList(filterMonth))
     setEditingStaff(null)
     setIsModalOpen(false)
   }
