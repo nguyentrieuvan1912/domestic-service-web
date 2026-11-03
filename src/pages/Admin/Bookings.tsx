@@ -28,6 +28,7 @@ export default function AdminBookings() {
     let matchesTab = true
     if (activeTab === 'PROCESSING') {
       matchesTab =
+        booking.status === 'AWAITING_PAYMENT' ||
         booking.status === 'WAITING_STAFF' ||
         booking.status === 'SEARCHING' ||
         booking.status === 'MATCHED' ||
@@ -61,6 +62,7 @@ export default function AdminBookings() {
     if (tabId === 'PROCESSING')
       return bookings.filter(
         (b) =>
+          b.status === 'AWAITING_PAYMENT' ||
           b.status === 'WAITING_STAFF' ||
           b.status === 'SEARCHING' ||
           b.status === 'MATCHED' ||

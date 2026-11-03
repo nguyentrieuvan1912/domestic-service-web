@@ -1,6 +1,6 @@
 export type TransactionType = 'PAYMENT' | 'PAYOUT' | 'REFUND'
 export type TransactionStatus = 'SUCCESS' | 'PENDING' | 'FAILED'
-export type PaymentMethod = 'CASH' | 'VNPAY' | 'MOMO' | 'BANK_TRANSFER'
+export type PaymentMethod = 'CASH' | 'VNPAY' | 'MOMO' | 'BANK_TRANSFER' | 'WALLET'
 
 export interface TransactionBreakdown {
   serviceFee: number
@@ -49,6 +49,7 @@ export const transactionStatusStyles: Record<TransactionStatus, string> = {
 }
 
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
+  WALLET: 'Ví khách hàng',
   CASH: 'Tiền mặt (COD)',
   VNPAY: 'Cổng VNPAY',
   MOMO: 'Ví MoMo',
