@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { submitApplication } from '../../../services/candidate.service'
+import { getActiveCatalogServices, submitApplication } from '../../../services/candidate.service'
 import type { CandidateSource, CandidateGender } from '../../../data/mockAdminCandidates'
 
 const areaOptions = ['Quận 1', 'Quận 3', 'Quận 7', 'Bình Thạnh', 'Tân Bình', 'Khác']
 const sourceOptions: CandidateSource[] = ['Website CleanMaster', 'Facebook', 'Người quen giới thiệu', 'Khác']
-const serviceOptions = ['Vệ sinh máy lạnh', 'Dọn dẹp nhà cửa', 'Nấu ăn', 'Chăm sóc trẻ em/người gia']
 const yearOptions = Array.from({ length: 36 }, (_, i) => 2005 - i)
 
 export default function PartnerApplicationForm() {
+  const [dynamicServices, setDynamicServices] = useState<{ id: number; name: string }[]>([])
+  const [servicesLoading, setServicesLoading] = useState(true)
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -31,6 +33,25 @@ export default function PartnerApplicationForm() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  // 1. Fetch danh sách dịch vụ động từ catalog-service
+  useEffect(() => {
+    let active = true
+    void getActiveCatalogServices()
+      .then((services) => {
+        if (active) {
+          setDynamicServices(services)
+          setServicesLoading(false)
+        }
+      })
+      .catch(() => {
+        if (active) setServicesLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const validate = () => {
     let isValid = true
@@ -84,6 +105,7 @@ export default function PartnerApplicationForm() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setSuccessMessage('')
+    setErrorMessage('')
 
     if (!validate()) return
 
@@ -105,7 +127,7 @@ export default function PartnerApplicationForm() {
         })
       }
     } catch (error) {
-      console.error(error)
+      setErrorMessage(error instanceof Error ? error.message : 'Đã có lỗi xảy ra khi nộp hồ sơ.')
     } finally {
       setIsLoading(false)
     }
@@ -120,6 +142,12 @@ export default function PartnerApplicationForm() {
       {successMessage && (
         <div className="mb-6 rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-sm font-semibold text-emerald-800 animate-fade-in">
           🎉 {successMessage}
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-4 text-sm font-semibold text-red-800 animate-fade-in">
+          ⚠️ {errorMessage}
         </div>
       )}
 
@@ -243,23 +271,33 @@ export default function PartnerApplicationForm() {
 
         <div>
           <label className={labelClassName}>Dịch vụ đăng ký *</label>
-          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {serviceOptions.map((service) => (
-              <label
-                key={service}
-                className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 hover:border-slate-300 transition"
-              >
-                <input
-                  type="checkbox"
-                  checked={formData.services.includes(service)}
-                  onChange={() => handleToggleService(service)}
-                  disabled={isLoading}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-slate-900"
-                />
-                <span className="text-sm font-medium text-slate-800">{service}</span>
-              </label>
-            ))}
-          </div>
+          {servicesLoading ? (
+            <div className="py-4 text-xs text-slate-500 flex items-center gap-2">
+              <svg className="h-4 w-4 animate-spin text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Đang tải danh mục dịch vụ từ hệ thống...</span>
+            </div>
+          ) : (
+            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {dynamicServices.map((service) => (
+                <label
+                  key={service.id}
+                  className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 hover:border-slate-300 transition"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.services.includes(service.name)}
+                    onChange={() => handleToggleService(service.name)}
+                    disabled={isLoading}
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-slate-900"
+                  />
+                  <span className="text-sm font-medium text-slate-800">{service.name}</span>
+                </label>
+              ))}
+            </div>
+          )}
           {errors.services && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.services}</p>}
         </div>
 
@@ -275,7 +313,7 @@ export default function PartnerApplicationForm() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>Đang xử lý...</span>
+                <span>Đang gửi hồ sơ...</span>
               </>
             ) : (
               'Gửi Hồ Sơ Đăng Ký'

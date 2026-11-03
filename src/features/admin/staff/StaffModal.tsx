@@ -1,5 +1,6 @@
 import AvatarPicker from '../../../components/common/AvatarPicker'
 import { adminRequest } from '../../../api/operations'
+import { submitStaffReward } from '../../../services/admin/staff.service'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { Service } from '../../../data/mockAdminServices'
@@ -553,9 +554,14 @@ export default function StaffModal({ period='CURRENT',
                       type="button"
                       onClick={async () => {
                         setSaving(true); setError('');
-                        try { await adminRequest('finance', '/admin/staff/' + draft.id + '/rewards', 'POST', {...selectedBonuses,period}); setRewardSavedMessage('Đã lưu đề xuất thưởng, chờ phê duyệt'); }
-                        catch (cause) { setError(cause instanceof Error ? cause.message : 'Chưa lưu được đề xuất thưởng.'); }
-                        finally { setSaving(false); }
+                        try {
+                          await submitStaffReward(draft.id, { ...selectedBonuses, period })
+                          setRewardSavedMessage('Đã lưu đề xuất thưởng, chờ phê duyệt')
+                        } catch (cause) {
+                          setError(cause instanceof Error ? cause.message : 'Chưa lưu được đề xuất thưởng.')
+                        } finally {
+                          setSaving(false)
+                        }
                       }}
                       className="rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-600 active:scale-95 text-center"
                     >

@@ -33,7 +33,104 @@ export function NewCandidateForm({ services, onSave, onCancel }: NewCandidateFor
 
 type PendingFormProps = { candidate: Candidate; onSave: (changes: Partial<Candidate>) => Promise<void> }
 export function PendingForm({ candidate, onSave }: PendingFormProps) {
-  return <FormShell submitLabel="Tiếp nhận ứng viên" onSubmit={async () => { await onSave({ status: 'ONBOARDING', subStatus: 'Đang tiếp nhận hồ sơ' }) }}><div className="space-y-3 text-sm"><div className="flex justify-between gap-4"><span className="text-slate-500">Họ tên</span><strong>{candidate.fullName}</strong></div><div className="flex justify-between gap-4"><span className="text-slate-500">Email</span><strong>{candidate.email}</strong></div><div className="flex justify-between gap-4"><span className="text-slate-500">Nguồn</span><strong>{candidate.source}</strong></div><div><span className="text-slate-500">Dịch vụ đăng ký</span><strong className="mt-1 block">{candidate.services.join(', ')}</strong></div></div></FormShell>
+  const [reviewNote, setReviewNote] = useState(candidate.note || '')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleAction = async (action: 'APPROVE' | 'INTERVIEW') => {
+    if (busy) return
+    setBusy(true)
+    setError('')
+    try {
+      if (action === 'APPROVE') {
+        await onSave({
+          status: 'ONBOARDING',
+          subStatus: 'Đã duyệt hồ sơ',
+          note: reviewNote,
+        })
+      } else {
+        await onSave({
+          status: 'ONBOARDING',
+          subStatus: 'Hẹn phỏng vấn',
+          note: reviewNote ? `${reviewNote} (Đã lên lịch phỏng vấn)` : 'Đã lên lịch phỏng vấn',
+        })
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể cập nhật trạng thái ứng viên.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="space-y-3 text-sm">
+        <div className="flex justify-between gap-4">
+          <span className="text-slate-500">Họ tên</span>
+          <strong className="text-slate-900">{candidate.fullName}</strong>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-slate-500">Số điện thoại</span>
+          <strong className="text-slate-900">{candidate.phone}</strong>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-slate-500">Email</span>
+          <strong className="text-slate-900">{candidate.email}</strong>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-slate-500">Khu vực</span>
+          <strong className="text-slate-900">{candidate.area}</strong>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-slate-500">Nguồn</span>
+          <strong className="text-slate-900">{candidate.source}</strong>
+        </div>
+        <div>
+          <span className="text-slate-500">Dịch vụ đăng ký:</span>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {candidate.services.map((srv, idx) => (
+              <span key={idx} className="rounded-md bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+                {srv}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label className={labelClassName}>Ghi chú xét duyệt / Phỏng vấn</label>
+        <textarea
+          rows={3}
+          value={reviewNote}
+          onChange={(e) => setReviewNote(e.target.value)}
+          disabled={busy}
+          className={`${inputClassName} resize-none`}
+          placeholder="Nhập ghi chú hoặc thời gian hẹn phỏng vấn..."
+        />
+      </div>
+
+      {error && <p role="alert" className="text-sm font-medium text-red-600">{error}</p>}
+
+      <div className="grid grid-cols-2 gap-3 pt-2">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => handleAction('INTERVIEW')}
+          className="rounded-lg border border-blue-600 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:opacity-50"
+        >
+          {busy ? 'Đang xử lý...' : '📅 Hẹn phỏng vấn'}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => handleAction('APPROVE')}
+          className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50"
+        >
+          {busy ? 'Đang xử lý...' : '✓ Duyệt hồ sơ'}
+        </button>
+      </div>
+    </div>
+  )
 }
 
 type OnboardingFormProps = { onSave: (data: Partial<Candidate>) => Promise<void> }
