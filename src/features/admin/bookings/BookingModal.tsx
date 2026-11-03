@@ -1,4 +1,5 @@
 import { dateTime, getAdminBookingHistory, type BookingHistoryEntry } from '../../../api/operations'
+import BookingEvidencePanel from '../../../components/admin/BookingEvidencePanel'
 import { useEffect, useState } from 'react'
 import type { Booking } from '../../../data/mockAdminBookings'
 import {
@@ -221,6 +222,7 @@ export default function BookingModal({
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+            <BookingEvidencePanel bookingId={booking.id} />
             <h3 className="text-sm font-bold uppercase text-slate-900">Lịch sử trạng thái đơn</h3>
             {historyError && <p role="alert" className="text-sm text-red-600">{historyError}</p>}
             {!historyError && history.length === 0 && <p className="text-sm text-slate-500">Đang tải lịch sử...</p>}

@@ -1,4 +1,5 @@
 export type BookingStatus =
+  | 'AWAITING_PAYMENT'
   | 'WAITING_STAFF'
   | 'SEARCHING'
   | 'MATCHED'
@@ -34,6 +35,7 @@ export interface Booking {
   discount: number
   totalAmount: number
   paymentMethod: string
+  settlementStatus?: string
   paymentStatus: 'PAID' | 'UNPAID' | 'REFUNDED'
   dynamicDetails: Record<string, string>
   createdAt: string
@@ -44,6 +46,7 @@ export interface Booking {
 }
 
 export const bookingStatusLabels: Record<BookingStatus, string> = {
+  AWAITING_PAYMENT: 'Chờ thanh toán',
   WAITING_STAFF: 'Chờ nhân viên nhận',
   SEARCHING: 'Đang tìm Staff',
   MATCHED: 'Đã có Staff',
@@ -53,6 +56,7 @@ export const bookingStatusLabels: Record<BookingStatus, string> = {
 }
 
 export const bookingStatusStyles: Record<BookingStatus, string> = {
+  AWAITING_PAYMENT: 'bg-orange-50 text-orange-700 border-orange-200',
   WAITING_STAFF: 'bg-amber-50 text-amber-700 border-amber-200',
   SEARCHING: 'bg-amber-50 text-amber-700 border-amber-200',
   MATCHED: 'bg-blue-50 text-blue-700 border-blue-200',

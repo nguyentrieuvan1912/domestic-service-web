@@ -1,3 +1,4 @@
+import CustomerWallet from '../../components/common/CustomerWallet'
 import AvatarPicker from '../../components/common/AvatarPicker'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -44,6 +45,7 @@ export default function Account() {
       <label className="block text-sm text-slate-700">Số điện thoại<input className={input} autoComplete="tel" type="tel" required pattern="(?:0[0-9]{9}|\+84[0-9]{9})" value={form.phone} onChange={event => setForm(current => ({ ...current, phone: event.target.value }))} /></label>
       <button type="submit" className="rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white disabled:opacity-50">{busy ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
     </fieldset></form> : !error && <p className="my-6" role="status">Đang tải tài khoản...</p>}
+    {session && <CustomerWallet key={session.accessToken} />}
     <button disabled={busy} onClick={() => { void logout().catch(() => setError('Đã thoát trên trình duyệt; không kết nối được backend để thu hồi phiên.')) }} className="mt-4 rounded-lg border border-slate-300 px-5 py-3 font-semibold text-slate-700">Đăng xuất</button>
   </section></main>
 }
