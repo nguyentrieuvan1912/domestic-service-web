@@ -2,6 +2,7 @@ export type DynamicFieldType = 'number' | 'text' | 'select'
 
 export interface Category {
   id: string
+  group?: string | null
   name: string
   serviceCount: number
   description: string

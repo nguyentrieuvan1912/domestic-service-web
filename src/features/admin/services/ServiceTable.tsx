@@ -10,7 +10,7 @@ type ServiceTableProps = {
 export default function ServiceTable({ services, packageCounts, addOnCounts, onEdit }: ServiceTableProps) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm">
+      <table className="w-full min-w-[900px] text-left text-sm">
         <thead className="bg-slate-50/80 text-xs uppercase tracking-wider font-semibold text-slate-500 border-b border-slate-200">
           <tr>
             <th className="w-1/3 max-w-[300px] px-4 py-3.5 font-semibold">Dịch vụ</th>
@@ -31,7 +31,7 @@ export default function ServiceTable({ services, packageCounts, addOnCounts, onE
                   </span>
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-800 leading-tight">{service.name}</p>
-                    <p className="mt-0.5 truncate text-xs text-slate-500 leading-normal">
+                    <p className="mt-1 line-clamp-2 text-xs text-slate-500 leading-relaxed" title={service.description}>
                       {service.description}
                     </p>
                   </div>
@@ -41,12 +41,12 @@ export default function ServiceTable({ services, packageCounts, addOnCounts, onE
                 {service.categoryName}
               </td>
               <td className="px-4 py-3.5 whitespace-nowrap">
-                <span className="inline-flex items-center rounded-full bg-violet-50 border border-violet-200 px-2.5 py-1 text-[11px] font-bold text-violet-700 leading-none">
+                <span className="inline-flex items-center rounded-full bg-orange-50 border border-orange-200 px-2.5 py-1 text-[11px] font-bold text-orange-700 leading-none">
                   {service.dynamicFields.length} trường
                 </span>
               </td>
               <td className="px-4 py-3.5 font-semibold text-slate-700 whitespace-nowrap leading-tight">
-                {packageCounts[service.id] ?? 0} gói / {addOnCounts[service.id] ?? 0} add-on
+                {packageCounts[service.id] ?? 0} gói / {addOnCounts[service.id] ?? 0} bổ sung
               </td>
               <td className="px-4 py-3.5 whitespace-nowrap">
                 <span

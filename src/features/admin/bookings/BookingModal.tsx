@@ -25,7 +25,7 @@ export default function BookingModal({
   const [history, setHistory] = useState<BookingHistoryEntry[]>([])
   const [historyError, setHistoryError] = useState('')
   useEffect(() => {
-    let active = true; setHistory([]); setHistoryError('')
+    let active = true; queueMicrotask(() => { if(active) { setHistory([]); setHistoryError('') } })
     getAdminBookingHistory(booking.id).then(items => { if(active) setHistory(items) }).catch(cause => { if(active) setHistoryError(cause instanceof Error ? cause.message : 'Chưa tải được lịch sử đơn.') })
     return () => { active = false }
   }, [booking.id, booking.status, booking.staffWaitRound])
@@ -228,7 +228,7 @@ export default function BookingModal({
             {!historyError && history.length === 0 && <p className="text-sm text-slate-500">Đang tải lịch sử...</p>}
             {history.map(event => <div key={event.id} className="border-l-2 border-emerald-200 pl-3 text-sm">
               <p className="text-xs text-slate-500">{dateTime(event.timestamp)} • {event.changedBy === 'SYSTEM' ? 'Hệ thống' : event.changedBy === 'CUSTOMER' ? 'Khách hàng' : event.changedBy === 'STAFF' ? 'Nhân viên' : 'Quản trị viên'}</p>
-              <p className="text-slate-800">{event.description}</p>
+              <p className="text-slate-800">{event.description}</p>{event.assignmentId && <p className="mt-1 text-xs text-slate-500">{event.staffName || `Nhân viên #${event.staffId}`} · Ca #{event.assignmentId} · {event.status === 'EN_ROUTE' ? 'Bắt đầu di chuyển' : event.status === 'IN_PROGRESS' ? 'Đã đến nơi gặp gia chủ' : event.status === 'COMPLETED' ? 'Hoàn thành' : event.status}</p>}
             </div>)}
           </div>
           {/* CARD 3: Tóm tắt Thanh toán */}

@@ -7,3 +7,35 @@
 body {
   font-family: var(--font-sans);
 }
+
+.article-content { color: #334155; font-size: 17px; line-height: 1.85; overflow-wrap: anywhere; }
+.article-content p { margin: 0 0 1.2em; }
+.article-content h1, .article-content h2, .article-content h3 { color: #0f172a; font-weight: 800; line-height: 1.35; margin: 1.7em 0 .7em; letter-spacing: -.025em; }
+.article-content h1 { font-size: 2em; }
+.article-content h2 { font-size: 1.5em; }
+.article-content h3 { font-size: 1.2em; }
+.article-content ul, .article-content ol { margin: 1em 0 1.5em; padding-left: 1.7em; }
+.article-content ul { list-style: disc; }
+.article-content ol { list-style: decimal; }
+.article-content li { margin: .4em 0; }
+.article-content li p { margin-bottom: .4em; }
+.article-content blockquote { border-left: 4px solid #059669; margin: 1.8em 0; padding: 1em 1.3em; background: #ecfdf5; border-radius: 0 12px 12px 0; color: #065f46; }
+.article-content blockquote p:last-child { margin: 0; }
+.article-content a { color: #047857; text-decoration: underline; text-underline-offset: 3px; }
+.article-content hr { margin: 2em 0; border: 0; border-top: 1px solid #e2e8f0; }
+.article-content img, .article-content video { display: block; max-width: 100%; height: auto; border-radius: 14px; margin: 1.5em auto; }
+.article-content figure { margin: 2em 0; }
+.article-content figure img, .article-content figure video { margin-bottom: .5em; }
+.article-content figcaption { text-align: center; font-size: .8em; color: #64748b; }
+.article-content pre { padding: 1.2em; background: #0f172a; color: #e2e8f0; border-radius: 12px; overflow-x: auto; white-space: pre; }
+.article-content code { font-family: ui-monospace, monospace; font-size: .88em; }
+.blog-video, .article-content div[data-youtube-video] { position: relative; margin: 1.5em 0; aspect-ratio: 16 / 9; }
+.blog-video iframe, .article-content div[data-youtube-video] iframe { width: 100%; height: 100%; border: 0; border-radius: 14px; }
+.studio-document { white-space: pre-wrap; }
+.studio-document .ProseMirror-selectednode { outline: 3px solid #34d399; outline-offset: 4px; }
+.studio-tool { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 34px; border: 1px solid transparent; border-radius: 6px; padding: 5px 9px; color: #475569; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.studio-tool:hover { background: #f1f5f9; }
+.studio-tool:disabled { opacity: .4; cursor: not-allowed; }
+.studio-tool-active { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+.studio-select { max-width: 155px; border: 1px solid #e2e8f0; border-radius: 6px; background: white; padding: 6px 8px; color: #475569; font-size: 12px; min-height: 34px; }
+.studio-field { display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 600; color: #475569; }

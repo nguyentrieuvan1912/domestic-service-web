@@ -1,15 +1,66 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { getActiveCatalogServices, submitApplication } from '../../../services/candidate.service'
+import { getActiveCatalogServices, getPartnerCaptcha, submitApplication } from '../../../services/candidate.service'
+import type { PartnerCaptcha, PartnerCatalogService } from '../../../services/candidate.service'
 import type { CandidateSource, CandidateGender } from '../../../data/mockAdminCandidates'
 
 const areaOptions = ['Quận 1', 'Quận 3', 'Quận 7', 'Bình Thạnh', 'Tân Bình', 'Khác']
 const sourceOptions: CandidateSource[] = ['Website CleanMaster', 'Facebook', 'Người quen giới thiệu', 'Khác']
 const yearOptions = Array.from({ length: 36 }, (_, i) => 2005 - i)
+const groupNames: Record<string, string> = {
+  CLEANING: 'Dọn dẹp và vệ sinh nhà cửa',
+  APPLIANCES: 'Vệ sinh và bảo dưỡng thiết bị',
+  CARE: 'Chăm sóc gia đình và thú cưng',
+  HOME_TASKS: 'Công việc gia đình và tiện ích',
+}
 
 export default function PartnerApplicationForm() {
-  const [dynamicServices, setDynamicServices] = useState<{ id: number; name: string }[]>([])
+  const [dynamicServices, setDynamicServices] = useState<PartnerCatalogService[]>([])
   const [servicesLoading, setServicesLoading] = useState(true)
+  const [servicesError, setServicesError] = useState('')
+  const [servicesAttempt, setServicesAttempt] = useState(0)
+  const [captcha, setCaptcha] = useState<PartnerCaptcha | null>(null)
+  const [captchaCode, setCaptchaCode] = useState('')
+  const [captchaLoading, setCaptchaLoading] = useState(true)
+  const [captchaError, setCaptchaError] = useState('')
+  const captchaSequence = useRef(0)
+  const submitting = useRef(false)
+  const refreshCaptcha = useCallback(async () => {
+    const sequence = ++captchaSequence.current
+    setCaptchaLoading(true)
+    setCaptcha(null)
+    setCaptchaCode('')
+    setCaptchaError('')
+    try {
+      const challenge = await getPartnerCaptcha()
+      if (sequence === captchaSequence.current) setCaptcha(challenge)
+    } catch (cause) {
+      if (sequence === captchaSequence.current) setCaptchaError(cause instanceof Error ? cause.message : 'Không thể tải CAPTCHA.')
+    } finally {
+      if (sequence === captchaSequence.current) setCaptchaLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    void getPartnerCaptcha().then(challenge => {
+      if (active) setCaptcha(challenge)
+    }).catch(cause => {
+      if (active) setCaptchaError(cause instanceof Error ? cause.message : 'Không thể tải CAPTCHA.')
+    }).finally(() => {
+      if (active) setCaptchaLoading(false)
+    })
+    return () => { active = false }
+  }, [])
+
+  const groupKey = (service: PartnerCatalogService) => service.categoryGroup || service.categoryName
+  const serviceGroups = Array.from(new Set(dynamicServices.map(groupKey)))
+    .map(key => ({
+      id: key,
+      name: groupNames[key] || key,
+      services: dynamicServices.filter(service => groupKey(service) === key)
+        .sort((a, b) => a.categoryName.localeCompare(b.categoryName, 'vi') || a.name.localeCompare(b.name, 'vi')),
+    })).sort((a, b) => a.name.localeCompare(b.name, 'vi'))
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -42,16 +93,20 @@ export default function PartnerApplicationForm() {
       .then((services) => {
         if (active) {
           setDynamicServices(services)
+          setServicesError('')
           setServicesLoading(false)
         }
       })
-      .catch(() => {
-        if (active) setServicesLoading(false)
+      .catch((cause) => {
+        if (active) {
+          setServicesLoading(false)
+          setServicesError(cause instanceof Error ? cause.message : 'Không thể tải dịch vụ.')
+        }
       })
     return () => {
       active = false
     }
-  }, [])
+  }, [servicesAttempt])
 
   const validate = () => {
     let isValid = true
@@ -104,14 +159,24 @@ export default function PartnerApplicationForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    if (submitting.current) return
     setSuccessMessage('')
     setErrorMessage('')
 
     if (!validate()) return
+    if (!captcha || Date.parse(captcha.expiresAt) <= Date.now()) {
+      setCaptchaError('CAPTCHA đã hết hạn hoặc chưa tải được. Vui lòng lấy mã mới.')
+      return
+    }
+    if (!/^[a-zA-Z0-9]{6}$/.test(captchaCode.trim())) {
+      setCaptchaError('Vui lòng nhập đủ 6 ký tự trong ảnh.')
+      return
+    }
 
+    submitting.current = true
     setIsLoading(true)
     try {
-      const response = await submitApplication(formData)
+      const response = await submitApplication({ ...formData, captchaId: captcha.id, captchaCode: captchaCode.trim() })
       if (response.success) {
         setSuccessMessage(response.message)
         setFormData({
@@ -129,6 +194,8 @@ export default function PartnerApplicationForm() {
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Đã có lỗi xảy ra khi nộp hồ sơ.')
     } finally {
+      await refreshCaptcha()
+      submitting.current = false
       setIsLoading(false)
     }
   }
@@ -279,9 +346,16 @@ export default function PartnerApplicationForm() {
               </svg>
               <span>Đang tải danh mục dịch vụ từ hệ thống...</span>
             </div>
+          ) : servicesError ? (
+            <p role="alert" className="text-sm text-red-600">{servicesError} <button type="button" onClick={() => { setServicesLoading(true); setServicesAttempt(value => value + 1) }} className="underline">Tải lại dịch vụ</button></p>
+          ) : dynamicServices.length === 0 ? (
+            <p className="text-sm text-slate-500">Hiện chưa có dịch vụ đang nhận đăng ký.</p>
           ) : (
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {dynamicServices.map((service) => (
+            <div className="mt-2 space-y-4">
+              {serviceGroups.map(group => <fieldset key={group.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <legend className="px-2 text-sm font-bold text-emerald-800">{group.name}</legend>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {group.services.map((service) => (
                 <label
                   key={service.id}
                   className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 hover:border-slate-300 transition"
@@ -296,15 +370,28 @@ export default function PartnerApplicationForm() {
                   <span className="text-sm font-medium text-slate-800">{service.name}</span>
                 </label>
               ))}
+                </div>
+              </fieldset>)}
             </div>
           )}
           {errors.services && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.services}</p>}
         </div>
 
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <label htmlFor="partner-captcha" className={labelClassName}>Mã xác nhận CAPTCHA *</label>
+          <p id="captcha-help" className="text-xs text-slate-500">Nhập 6 ký tự trong ảnh, không phân biệt chữ hoa và chữ thường. Mã có hiệu lực 5 phút.</p>
+          <div className="flex flex-wrap items-center gap-3">
+            {captchaLoading ? <p role="status" className="text-sm text-slate-500">Đang tải mã xác nhận...</p> : captcha && <img src={captcha.image} alt="Ảnh mã CAPTCHA gồm 6 ký tự cần nhập bên dưới" width={240} height={80} className="rounded-lg border border-slate-200" />}
+            <button type="button" disabled={isLoading || captchaLoading} onClick={() => void refreshCaptcha()} className="text-sm font-semibold text-emerald-700 underline disabled:opacity-50">Lấy mã mới</button>
+          </div>
+          <input id="partner-captcha" aria-describedby="captcha-help" aria-invalid={!!captchaError} required maxLength={6} autoComplete="off" autoCapitalize="characters" spellCheck={false} value={captchaCode} onChange={event => { setCaptchaCode(event.target.value); setCaptchaError('') }} disabled={isLoading || captchaLoading || !captcha} className={`${inputClassName} uppercase tracking-widest`} placeholder="Nhập mã trong ảnh" />
+          {captchaError && <p role="alert" className="text-sm text-red-600">{captchaError}</p>}
+        </div>
+
         <div className="pt-2">
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || captchaLoading || !captcha || servicesLoading || !!servicesError || dynamicServices.length === 0}
             className="w-full rounded-xl bg-slate-900 text-white py-3.5 text-sm font-bold shadow-md transition hover:bg-slate-800 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (

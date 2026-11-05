@@ -31,17 +31,19 @@ export default function AdminCandidates() {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [evaluationFilter, setEvaluationFilter] = useState<'pending' | 'ranked'>('pending')
   const [services, setServices] = useState<CatalogService[]>([])
   const [catalogError, setCatalogError] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [attempt, setAttempt] = useState(0)
+  const [catalogAttempt, setCatalogAttempt] = useState(0)
 
   useAdminRefresh(() => setAttempt((value) => value + 1))
 
   useEffect(() => {
     let active = true
-    setLoading(true)
+    // Poll in the background: inserting a loading row every time shifts the board.
     void getAdminCandidates()
       .then((data) => {
         if (active) {
@@ -70,14 +72,12 @@ export default function AdminCandidates() {
     const candidate = await advanceCandidate(draft)
     setCandidates((current) => current.map((item) => (item.id === candidate.id ? candidate : item)))
     setSelectedCandidate((current) => (current && current.id === candidate.id ? candidate : current))
-    setAttempt((value) => value + 1)
   }
 
   const addCandidate = async (draft: Candidate) => {
     const candidate = await createCandidate(draft)
     setCandidates((current) => [...current, candidate])
     setIsCreateOpen(false)
-    setAttempt((value) => value + 1)
   }
 
   useEffect(() => {
@@ -101,14 +101,13 @@ export default function AdminCandidates() {
       if (!controller.signal.aborted) setCatalogError(cause.message)
     })
     return () => controller.abort()
-  }, [attempt])
+  }, [catalogAttempt])
 
   const createStaffAccount = async (password: string, rank: string, avatar: string) => {
     if (!selectedCandidate) return
     const saved = await provisionStaff(selectedCandidate.id, password, rank, avatar)
     setCandidates((current) => current.map((item) => (item.id === saved.id ? saved : item)))
     setSelectedCandidate(saved)
-    setAttempt((value) => value + 1)
   }
 
   return (
@@ -116,7 +115,7 @@ export default function AdminCandidates() {
       {catalogError && (
         <div role="alert" className="text-red-600">
           {catalogError}{' '}
-          <button className="underline" onClick={() => setAttempt((value) => value + 1)}>
+          <button className="underline" onClick={() => setCatalogAttempt((value) => value + 1)}>
             Tải lại danh mục
           </button>
         </div>
@@ -173,6 +172,9 @@ export default function AdminCandidates() {
             }
             return candidate.status === status.id
           })
+          const visibleCandidates = status.id === 'EVALUATION'
+            ? columnCandidates.filter(candidate => evaluationFilter === 'ranked' ? !!candidate.staffId : !candidate.staffId)
+            : columnCandidates
 
           return (
             <section key={status.id} className={`min-h-[420px] rounded-xl border p-4 ${columnStyles[status.id]}`}>
@@ -184,12 +186,31 @@ export default function AdminCandidates() {
                   <h2 className="mt-1 text-lg font-bold uppercase text-slate-900">{status.label}</h2>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-bold ${badgeStyles[status.id]}`}>
-                  {columnCandidates.length}
+                  {visibleCandidates.length}
                 </span>
               </div>
 
+              {status.id === 'EVALUATION' && (
+                <div role="group" aria-label="Lọc trạng thái xếp hạng" className="mb-4 grid grid-cols-2 gap-1 rounded-lg border border-orange-200 bg-white/70 p-1">
+                  {([
+                    { value: 'pending', label: 'Chờ xếp hạng', count: columnCandidates.filter(candidate => !candidate.staffId).length },
+                    { value: 'ranked', label: 'Đã xếp hạng', count: columnCandidates.filter(candidate => !!candidate.staffId).length },
+                  ] as const).map(filter => (
+                    <button
+                      key={filter.value}
+                      type="button"
+                      aria-pressed={evaluationFilter === filter.value}
+                      onClick={() => setEvaluationFilter(filter.value)}
+                      className={`rounded-md px-2 py-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 ${evaluationFilter === filter.value ? 'bg-orange-600 text-white shadow-sm' : 'text-slate-600 hover:bg-orange-50 hover:text-orange-800'}`}
+                    >
+                      {filter.label} ({filter.count})
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="space-y-3">
-                {columnCandidates.map((candidate) => (
+                {visibleCandidates.map((candidate) => (
                   <div
                     key={candidate.id}
                     onClick={() => setSelectedCandidate(candidate)}
@@ -263,9 +284,11 @@ export default function AdminCandidates() {
                 ))}
               </div>
 
-              {columnCandidates.length === 0 && (
+              {visibleCandidates.length === 0 && (
                 <p className="mt-4 rounded-lg border border-dashed border-slate-300 px-3 py-6 text-center text-xs text-slate-500">
-                  Chưa có ứng viên
+                  {status.id === 'EVALUATION'
+                    ? evaluationFilter === 'pending' ? 'Chưa có ứng viên chờ xếp hạng' : 'Chưa có ứng viên đã xếp hạng'
+                    : 'Chưa có ứng viên'}
                 </p>
               )}
             </section>
