@@ -17,7 +17,7 @@ export interface CatalogDetail {
 }
 export interface CatalogPage { items: CatalogService[]; total: number; page: number; size: number; totalPages: number }
 
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
+export const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
 export const money = (value: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
 export const priceUnit = (unit: string) => ({ PACKAGE: 'gói', HOUR: 'giờ', SESSION: 'buổi', ITEM: 'đơn vị' }[unit] || unit)
 

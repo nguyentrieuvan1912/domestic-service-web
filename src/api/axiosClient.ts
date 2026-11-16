@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import type { AxiosInstance, AxiosResponse, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
 
 export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
 
@@ -46,6 +46,9 @@ axiosClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const isPublic =
       config.url?.includes('/candidates/apply') ||
+      config.url?.includes('/candidates/captcha') ||
+      config.url?.startsWith('/catalog/services') ||
+      config.url?.startsWith('/catalog/categories') ||
       config.headers?.['x-skip-auth'] === 'true'
 
     if (!isPublic) {
@@ -90,7 +93,7 @@ axiosClient.interceptors.response.use(
  * Wrapper tiện ích cho các request có kiểu trả về đúng chuẩn response.data
  */
 export const http = {
-  get: <T = unknown>(url: string, config?: InternalAxiosRequestConfig): Promise<T> =>
+  get: <T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> =>
     axiosClient.get(url, config) as unknown as Promise<T>,
   post: <T = unknown>(url: string, data?: unknown, config?: InternalAxiosRequestConfig): Promise<T> =>
     axiosClient.post(url, data, config) as unknown as Promise<T>,

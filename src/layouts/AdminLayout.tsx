@@ -17,6 +17,9 @@ const menuItems = [
   { label: 'Tài chính & Giao dịch', path: '/admin/transactions' },
   { label: 'Đánh giá & Hỗ trợ', path: '/admin/reviews' },
   { label: 'Thống kê & Báo cáo', path: '/admin/analytics' },
+  { label: 'Bài viết & Studio', path: '/admin/blog' },
+  { label: 'Thưởng & Phạt', path: '/admin/discipline' },
+  { label: 'Tri thức trợ lý AI', path: '/admin/knowledge' },
 ]
 
 const menuIcons = [
@@ -30,6 +33,9 @@ const menuIcons = [
   'M3 5h18v15H3z M3 9h18 M15 14h3',
   'M21 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3z M7 8h10 M7 12h7',
   'M4 3v18h17 M8 17v-5 M13 17V7 M18 17v-8',
+  'M4 3h12l4 4v14H4z M8 8h4 M8 12h8 M8 16h8',
+  'M12 3v18 M4 7h16 M6 7l-4 7h8z M18 7l-4 7h8z M8 21h8',
+  'M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-3H4z M13 7a3 3 0 0 1 3-3h5v14h-4a4 4 0 0 0-4 3 M7 8h3 M7 12h3 M16 8h2 M16 12h2',
 ]
 
 function MenuDots() {

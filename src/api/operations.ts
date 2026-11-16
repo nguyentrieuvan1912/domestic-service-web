@@ -108,5 +108,5 @@ export function exportCsv(filename: string, rows: (string | number)[][]) {
   const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = filename; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-export interface BookingHistoryEntry { id: number; status: string; description: string; timestamp: string; changedBy: string }
+export interface BookingHistoryEntry { id: number | string; staffId?: number; assignmentId?: number; staffName?: string; status: string; description: string; timestamp: string; changedBy: string }
 export const getAdminBookingHistory = (id: string) => adminRequest<BookingHistoryEntry[]>('booking', `/bookings/${id}/history`)

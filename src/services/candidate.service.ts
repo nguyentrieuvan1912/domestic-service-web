@@ -1,5 +1,11 @@
 import { http } from '../api/axiosClient'
 import type { Candidate, CandidateGender, CandidateSource } from '../data/mockAdminCandidates'
+import type { CatalogCategory, CatalogPage, CatalogService } from '../api/catalog'
+
+export type PartnerCatalogService = CatalogService & { categoryGroup: string | null }
+
+export interface PartnerCaptcha { id: string; image: string; expiresAt: string }
+export const getPartnerCaptcha = () => http.get<PartnerCaptcha>('/identity/candidates/captcha')
 
 export interface ApplicationData {
   fullName: string
@@ -12,6 +18,8 @@ export interface ApplicationData {
   source: CandidateSource
   services: string[]
   note?: string
+  captchaId: string
+  captchaCode: string
 }
 
 export type CandidateBackendResponse = Omit<Candidate, 'id' | 'staffId'> & {
@@ -63,6 +71,8 @@ export const submitApplication = async (
       source: data.source || 'Website CleanMaster',
       services: data.services,
       note: data.note || 'Đăng ký ứng tuyển trực tuyến qua website CleanMaster',
+      captchaId: data.captchaId,
+      captchaCode: data.captchaCode,
     }
 
     const response = await http.post<CandidateBackendResponse>(
@@ -80,7 +90,7 @@ export const submitApplication = async (
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Đăng ký ứng tuyển thất bại. Vui lòng thử lại.'
-    throw new Error(message)
+    throw new Error(message, { cause: error })
   }
 }
 
@@ -160,24 +170,16 @@ export const getCandidates = getAdminCandidates
 /**
  * Lấy danh sách dịch vụ hoạt động từ catalog-service để hiển thị động trên Form ứng tuyển
  */
-export const getActiveCatalogServices = async (): Promise<{ id: number; name: string }[]> => {
-  try {
-    const data = await http.get<{ items: { id: number; name: string }[] }>(
-      '/catalog/services?page=0&size=100'
-    )
-    if (data?.items && Array.isArray(data.items)) {
-      return data.items.map((item) => ({ id: item.id, name: item.name }))
-    }
-  } catch (error) {
-    console.warn('Chưa kết nối được catalog-service, sử dụng danh sách dự phòng:', error)
-  }
-
-  // Danh sách dự phòng nếu catalog-service đang offline
-  return [
-    { id: 1, name: 'Dọn dẹp nhà cửa' },
-    { id: 2, name: 'Vệ sinh máy lạnh' },
-    { id: 3, name: 'Nấu ăn gia đình' },
-    { id: 4, name: 'Chăm sóc trẻ em' },
-    { id: 5, name: 'Chăm sóc người cao tuổi' },
-  ]
+export const getActiveCatalogServices = async (): Promise<PartnerCatalogService[]> => {
+  const categories = await http.get<CatalogCategory[]>('/catalog/categories')
+  const result: CatalogService[] = []
+  let page = 0
+  let totalPages: number
+  do {
+    const data = await http.get<CatalogPage>(`/catalog/services?page=${page}&size=100`)
+    result.push(...data.items)
+    totalPages = data.totalPages
+    page++
+  } while (page < totalPages)
+  return result.map(service => ({ ...service, categoryGroup: categories.find(category => category.id === service.categoryId)?.group ?? null }))
 }

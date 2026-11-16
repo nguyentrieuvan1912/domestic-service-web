@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import GuestLayout from './components/common/GuestLayout'
 import AdminPrivateRoute from './components/admin/AdminPrivateRoute'
@@ -7,6 +8,9 @@ import AdminLogin from './pages/Admin/Login'
 import AdminServices from './pages/Admin/Services'
 import About from './pages/About/About'
 import Blog from './pages/Blog/Blog'
+import BlogDetail from './pages/Blog/BlogDetail'
+const AdminBlog = lazy(() => import('./pages/Admin/Blog'))
+const AdminKnowledge = lazy(() => import('./pages/Admin/Knowledge'))
 import Cooperation from './pages/Cooperation/Cooperation'
 import BecomePartner from './pages/Guest/BecomePartner'
 import Download from './pages/Download/Download'
@@ -26,6 +30,7 @@ import AdminPromotions from './pages/Admin/Promotions'
 import AdminTransactions from './pages/Admin/Transactions'
 import AdminReviews from './pages/Admin/Reviews'
 import AdminAnalytics from './pages/Admin/Analytics'
+import AdminDiscipline from './pages/Admin/Discipline'
 
 function App() {
   return (
@@ -35,6 +40,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/download" element={<Download />} />
           <Route path="/cooperation" element={<Cooperation />} />
           <Route path="/cooperation/staff" element={<BecomePartner />} />
@@ -54,6 +60,8 @@ function App() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="services" element={<AdminServices />} />
+            <Route path="blog" element={<Suspense fallback={<p className="p-8">Đang mở studio…</p>}><AdminBlog /></Suspense>} />
+            <Route path="knowledge" element={<Suspense fallback={<p className="p-8">Đang mở tri thức AI…</p>}><AdminKnowledge /></Suspense>} />
             <Route path="candidates" element={<AdminCandidates />} />
             <Route path="staff" element={<AdminStaff />} />
             <Route path="customers" element={<AdminCustomers />} />
@@ -62,6 +70,7 @@ function App() {
             <Route path="transactions" element={<AdminTransactions />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="discipline" element={<AdminDiscipline />} />
           </Route>
         </Route>
       </Routes>
