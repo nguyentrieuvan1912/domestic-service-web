@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { AddOnService, AddOnSlug } from '../../data/addons'
-import { money, type CatalogDetail, type CatalogPage } from '../../api/catalog'
+import { catalogImageUrl, money, type CatalogDetail, type CatalogPage } from '../../api/catalog'
 import { useCatalogResource } from '../../hooks/useCatalogResource'
 import CatalogState from '../../components/common/CatalogState'
 
@@ -95,7 +95,7 @@ function AddOnContent({ activeTab, setActiveTab, serviceId, catalog, isModalOpen
   const data = detail.data
   const activeService: AddOnService | null = data ? {
     id: String(data.service.id), slug: activeTab, shortName: tab.shortName, name: `Vệ sinh ${tab.shortName}`,
-    description: data.service.description || '', imageUrl: data.service.imageUrl || '',
+    description: data.service.description || '', imageUrl: catalogImageUrl(data.service.imageUrl),
     benefits: data.benefits, process: data.workflow, pricingType: 'Theo gói dịch vụ',
     pricing: data.packages.filter(pkg => tab.pattern.test(pkg.name)).map(pkg => ({ label: pkg.name, price: money(pkg.basePrice), note: pkg.description || `${pkg.durationMinutes} phút` })),
   } : null

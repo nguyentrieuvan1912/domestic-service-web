@@ -9,6 +9,7 @@ const serviceLinks = [
 
 const supportLinks = [
   { label: 'FAQ', to: '/faq' },
+  { label: 'Hướng dẫn Staff dùng App', to: '/employee-guideline' },
   { label: 'Liên hệ', to: '/contact' },
   { label: 'Điều khoản sử dụng', to: '/terms' },
   { label: 'Chính sách bảo mật', to: '/privacy' },
@@ -16,7 +17,7 @@ const supportLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-950 text-slate-300">
+    <footer className="bg-slate-950 text-slate-300 [scroll-snap-align:end]">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:px-8">
         <div>
           <Link to="/" className="inline-flex items-center gap-3 text-white" aria-label="CleanMaster - Trang chủ">
@@ -62,7 +63,7 @@ export default function Footer() {
             ))}
           </ul>
           <div className="mt-5 space-y-1 text-sm text-slate-400">
-            <p>Hotline: 1900 0000</p>
+            <p>Hotline: 1900 6868 (08:00 - 21:00)</p>
             <p>Email: hello@cleanmaster.vn</p>
           </div>
         </div>

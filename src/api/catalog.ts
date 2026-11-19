@@ -19,6 +19,7 @@ export interface CatalogPage { items: CatalogService[]; total: number; page: num
 
 export const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
 export const money = (value: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
+export const catalogImageUrl = (url?: string | null) => url?.startsWith('/api/v1/catalog/') ? API_BASE_URL + url : url || ''
 export const priceUnit = (unit: string) => ({ PACKAGE: 'gói', HOUR: 'giờ', SESSION: 'buổi', ITEM: 'đơn vị' }[unit] || unit)
 
 export async function catalogGet<T>(path: string, signal: AbortSignal): Promise<T> {
