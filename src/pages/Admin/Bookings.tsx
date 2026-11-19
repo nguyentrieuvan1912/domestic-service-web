@@ -20,7 +20,8 @@ export default function AdminBookings() {
   const [activeTab, setActiveTab] = useState<FilterTab>('ALL')
   const resource = useAdminResource(getAdminBookings, [] as Booking[])
   const { data: bookings, setData: setBookings } = resource
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
+  const selectedBooking = bookings.find(booking => booking.id === selectedBookingId)
   const [search, setSearch] = useState('')
 
   const filteredBookings = bookings.filter((booking) => {
@@ -54,7 +55,7 @@ export default function AdminBookings() {
   const handleUpdateBooking = async (updated: Booking) => {
     await cancelAdminBooking(updated)
     const savedData = await getAdminBookings(); setBookings(savedData)
-    setSelectedBooking(savedData.find(item => item.id === updated.id) || null)
+    setSelectedBookingId(savedData.some(item => item.id === updated.id) ? updated.id : null)
   }
 
   const getTabCount = (tabId: FilterTab): number => {
@@ -145,7 +146,7 @@ export default function AdminBookings() {
         {/* Data Table */}
         <BookingTable
           bookings={filteredBookings}
-          onSelectBooking={(booking) => setSelectedBooking(booking)}
+          onSelectBooking={(booking) => setSelectedBookingId(booking.id)}
         />
       </section>
 
@@ -153,7 +154,7 @@ export default function AdminBookings() {
       {selectedBooking && (
         <BookingModal
           booking={selectedBooking}
-          onClose={() => setSelectedBooking(null)}
+          onClose={() => setSelectedBookingId(null)}
           onUpdateBooking={handleUpdateBooking}
         />
       )}

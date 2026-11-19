@@ -38,8 +38,8 @@ export default function AdminPromotions() {
     const query = search.trim().toLowerCase()
     const matchesSearch =
       !query ||
-      item.code.toLowerCase().includes(query) ||
-      item.description.toLowerCase().includes(query)
+      (item.code ?? '').toLowerCase().includes(query) ||
+      (item.description ?? '').toLowerCase().includes(query)
 
     return matchesTab && matchesSearch
   })

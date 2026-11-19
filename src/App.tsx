@@ -22,6 +22,7 @@ import AddOnServices from './pages/Services/AddOnServices'
 import Contact from './pages/Support/Contact'
 import FAQ from './pages/Support/FAQ'
 import Terms from './pages/Support/Terms'
+import EmployeeGuideline from './pages/Support/EmployeeGuideline'
 import AdminStaff from './pages/Admin/Staff'
 import AdminCandidates from './pages/Admin/Candidates'
 import AdminBookings from './pages/Admin/Bookings'
@@ -44,6 +45,7 @@ function App() {
           <Route path="/download" element={<Download />} />
           <Route path="/cooperation" element={<Cooperation />} />
           <Route path="/cooperation/staff" element={<BecomePartner />} />
+          <Route path="/cooperation/recruitment" element={<Navigate to="/cooperation/staff" replace />} />
           <Route path="/promotions" element={<Promotions />} />
           <Route path="/services" element={<Services />} />
           <Route path="/services/add-ons" element={<AddOnServices />} />
@@ -52,6 +54,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Terms />} />
+          <Route path="/employee-guideline" element={<EmployeeGuideline />} />
         </Route>
 
         <Route path="/admin/login" element={<AdminLogin />} />

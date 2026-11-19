@@ -1,13 +1,15 @@
 import type { Service } from '../../../data/mockAdminServices'
+import { catalogImageUrl } from '../../../api/catalog'
 
 type ServiceTableProps = {
   services: Service[]
   packageCounts: Record<string, number>
   addOnCounts: Record<string, number>
   onEdit: (service: Service) => void
+  onEditImage: (service: Service) => void
 }
 
-export default function ServiceTable({ services, packageCounts, addOnCounts, onEdit }: ServiceTableProps) {
+export default function ServiceTable({ services, packageCounts, addOnCounts, onEdit, onEditImage }: ServiceTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[900px] text-left text-sm">
@@ -26,9 +28,9 @@ export default function ServiceTable({ services, packageCounts, addOnCounts, onE
             <tr key={service.id} className="transition hover:bg-slate-50/80">
               <td className="w-1/3 max-w-[300px] px-4 py-3.5">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-700 leading-none">
-                    {service.icon}
-                  </span>
+                  {service.imageUrl
+                    ? <img src={catalogImageUrl(service.imageUrl)} alt="" loading="lazy" className="h-12 w-16 shrink-0 rounded-lg bg-slate-100 object-cover" />
+                    : <span className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-[10px] font-medium text-slate-600">Chưa có ảnh</span>}
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-800 leading-tight">{service.name}</p>
                     <p className="mt-1 line-clamp-2 text-xs text-slate-500 leading-relaxed" title={service.description}>
@@ -60,6 +62,10 @@ export default function ServiceTable({ services, packageCounts, addOnCounts, onE
                 </span>
               </td>
               <td className="px-4 py-3.5 text-right whitespace-nowrap w-24">
+                <button type="button" onClick={() => onEditImage(service)}
+                  className="mr-2 inline-flex rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100">
+                  {service.imageUrl ? 'Đổi ảnh' : 'Thêm ảnh'}
+                </button>
                 <button
                   type="button"
                   onClick={() => onEdit(service)}

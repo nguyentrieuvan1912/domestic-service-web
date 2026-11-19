@@ -23,6 +23,7 @@ export interface Service {
   categoryId: string
   categoryName: string
   icon: string
+  imageUrl?: string | null
   isActive: boolean
   dynamicFields: DynamicField[]
 }

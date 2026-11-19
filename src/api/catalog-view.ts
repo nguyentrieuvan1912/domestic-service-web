@@ -1,5 +1,5 @@
 import { servicePackages, type ServicePackage } from '../data/services'
-import { money, type CatalogDetail, type CatalogService } from './catalog'
+import { catalogImageUrl, money, type CatalogDetail, type CatalogService } from './catalog'
 
 // Preserve the existing page model; API owns IDs, availability, content and prices.
 export function webCatalogView(item: CatalogService, detail?: CatalogDetail): ServicePackage {
@@ -7,7 +7,7 @@ export function webCatalogView(item: CatalogService, detail?: CatalogDetail): Se
   return {
     id: String(item.id), slug: String(item.id), code: item.code, name: item.name,
     description: item.description || '', active: true,
-    imageUrl: item.imageUrl || '', bannerImage: item.imageUrl || '',
+    imageUrl: catalogImageUrl(item.imageUrl), bannerImage: catalogImageUrl(item.imageUrl),
     suitableFor: template?.suitableFor || item.shortDescription || '',
     duration: template?.duration || `${item.estimatedDurationMinutes} phút`,
     areaRange: template?.areaRange || '', addOnIds: [],

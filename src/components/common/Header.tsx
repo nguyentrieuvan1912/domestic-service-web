@@ -23,8 +23,8 @@ const navigationItems: NavigationItem[] = [
     label: 'Hợp tác',
     children: [
       { label: 'Trở thành Staff', to: '/cooperation' },
-      { label: 'Tuyển dụng', to: '/cooperation/recruitment' },
-      { label: 'Quy trình & quyền lợi', to: '/cooperation' },
+      { label: 'Đăng ký ứng tuyển', to: '/cooperation/staff' },
+      { label: 'Hướng dẫn dùng App Staff', to: '/employee-guideline' },
     ],
   },
   {
