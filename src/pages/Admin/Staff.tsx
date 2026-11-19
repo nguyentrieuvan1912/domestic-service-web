@@ -94,8 +94,8 @@ export default function AdminStaff() {
       return 0
     })
 
-  const saveStaff = async (member: Staff) => {
-    await saveAdminStaff(member)
+  const saveStaff = async (member: Staff, areaEdited: boolean) => {
+    await saveAdminStaff(member, areaEdited)
     setStaffList(await getAdminStaffList(filterMonth))
     setEditingStaff(null)
     setIsModalOpen(false)

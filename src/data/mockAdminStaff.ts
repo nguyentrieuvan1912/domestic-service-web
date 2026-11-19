@@ -35,6 +35,7 @@ export interface Staff {
   cancelledBookings: number
   skillIds: string[]
   areaIds: string[]
+  scheduleRevision?: number
   violations: StaffViolation[]
 }
 

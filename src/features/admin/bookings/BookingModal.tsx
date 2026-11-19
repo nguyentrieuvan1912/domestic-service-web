@@ -9,6 +9,12 @@ import {
   dispatchModeStyles,
 } from '../../../data/mockAdminBookings'
 
+const paymentMethodLabels: Record<string, string> = {
+  CASH: 'Tiền mặt',
+  WALLET: 'Ví khách hàng',
+  BANK_TRANSFER_QR: 'Chuyển khoản QR',
+}
+
 type BookingModalProps = {
   booking: Booking
   onClose: () => void
@@ -236,7 +242,7 @@ export default function BookingModal({
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-2 flex items-center justify-between">
               <span>💳 Tóm tắt Thanh toán</span>
               <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                {booking.paymentMethod}
+                {paymentMethodLabels[booking.paymentMethod] ?? booking.paymentMethod}
               </span>
             </h3>
 

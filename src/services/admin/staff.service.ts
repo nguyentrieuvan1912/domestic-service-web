@@ -23,7 +23,7 @@ export interface BackendStaffDto {
 export interface BackendStaffOperationsDto {
   capabilities?: { id: number; serviceId: number; status: string }[]
   restrictions?: { id: number; type: string; reason: string; startsAt: string; endsAt?: string; status: string }[]
-  availability?: { saved?: { areaIds?: string[] } }
+  availability?: { saved?: { areaIds?: string[]; revision?: number } }
   completedBookings?: number
   cancelledBookings?: number
   averageRating?: number
@@ -147,6 +147,7 @@ export function mapBackendToStaff(
     cancelledBookings: cancelled,
     skillIds,
     areaIds,
+    scheduleRevision: ops?.availability?.saved?.revision,
     violations,
     dateOfBirth: base.dateOfBirth,
     birthYear: base.birthYear,
@@ -216,7 +217,8 @@ export async function getAdminStaffDetail(id: string | number, period = 'CURRENT
 /**
  * Lưu/cập nhật thông tin hồ sơ nhân viên và năng lực vận hành
  */
-export async function saveAdminStaff(person: Staff): Promise<void> {
+export async function saveAdminStaff(person: Staff, areaEdited: boolean): Promise<void> {
+  if (areaEdited && person.scheduleRevision === undefined) throw new Error('Vui lòng tải lại khu vực đã lưu trước khi cập nhật.')
   // 1. Cập nhật thông tin định danh & tài khoản
   await http.patch(`/identity/admin/staff/${person.id}`, {
     fullName: person.fullName,
@@ -245,11 +247,15 @@ export async function saveAdminStaff(person: Staff): Promise<void> {
     status: 'ACTIVE',
   }))
 
-  await http.put(`/booking/admin/staff/${person.id}/operations`, {
-    skillIds: person.skillIds,
-    areaIds: person.areaIds,
-    restrictions,
-  })
+  try {
+    await http.put(`/booking/admin/staff/${person.id}/operations`, {
+      skillIds: person.skillIds,
+      ...(areaEdited ? { areaIds: person.areaIds, scheduleRevision: person.scheduleRevision } : {}),
+      restrictions,
+    })
+  } catch (cause) {
+    throw new Error(`Thông tin tài khoản đã lưu. Cập nhật vận hành chưa hoàn tất. ${cause instanceof Error ? cause.message : 'Vui lòng tải lại hồ sơ.'}`)
+  }
 
   // Phát event đồng bộ cho các component admin khác
   window.dispatchEvent(new Event('admin-data-changed'))

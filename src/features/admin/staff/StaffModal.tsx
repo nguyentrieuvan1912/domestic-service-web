@@ -13,7 +13,7 @@ type StaffModalProps = {
   staff: Staff | null
   services: Service[]
   onClose: () => void
-  onSave: (staff: Staff) => void | Promise<void>
+  onSave: (staff: Staff, areaEdited: boolean) => void | Promise<void>
 }
 
 type StaffTab = 'profile' | 'skills' | 'statistics' | 'violations'
@@ -67,6 +67,7 @@ export default function StaffModal({ period='CURRENT',
   const [areaOptions, setAreaOptions] = useState<{id: string; name: string}[]>([])
   const [areaSearch, setAreaSearch] = useState('')
   const [areaError, setAreaError] = useState('')
+  const [areaEdited, setAreaEdited] = useState(false)
   const normalizeArea = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().trim()
   useEffect(() => {
     if (accountOnly) return
@@ -100,6 +101,7 @@ export default function StaffModal({ period='CURRENT',
   }
 
   const toggleArea = (areaId: string) => {
+    setAreaEdited(true)
     setDraft((prev) => ({
       ...prev,
       areaIds: prev.areaIds.includes(areaId)
@@ -146,7 +148,7 @@ export default function StaffModal({ period='CURRENT',
     e.preventDefault()
     if (saving) return
     setSaving(true); setError('')
-    try { await onSave(draft) } catch (cause) { setError(cause instanceof Error ? cause.message : 'Không thể lưu tài khoản.'); setSaving(false) }
+    try { await onSave(draft, areaEdited) } catch (cause) { setError(cause instanceof Error ? cause.message : 'Không thể lưu tài khoản.'); setSaving(false) }
   }
 
   return (
