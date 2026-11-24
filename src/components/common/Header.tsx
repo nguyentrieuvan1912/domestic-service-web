@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import BrandLogo from './BrandLogo'
 
 type NavigationItem = {
   label: string
@@ -59,6 +60,12 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const headerRef = useRef<HTMLElement>(null)
+  const { pathname, search } = useLocation()
+
+  useEffect(() => {
+    setMobileOpen(false)
+    setOpenMenu(null)
+  }, [pathname, search])
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
@@ -93,12 +100,10 @@ export default function Header() {
 
   return (
     <header ref={headerRef} className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-        <Link to="/" onClick={closeNavigation} className="group flex items-center gap-3" aria-label="CleanMaster - Trang chủ">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-lg font-black text-white shadow-sm transition group-hover:bg-emerald-700">
-            C
-          </span>
-          <span className="text-xl font-extrabold tracking-tight text-slate-900">CleanMaster</span>
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-5 lg:h-[73px] lg:px-8">
+        <Link to="/" onClick={closeNavigation} className="group flex items-center gap-2.5 sm:gap-3" aria-label="CleanMaster - Trang chủ">
+          <BrandLogo className="shadow-sm" />
+          <span className="text-lg font-extrabold tracking-tight text-slate-900 sm:text-xl">CleanMaster</span>
         </Link>
 
         <nav aria-label="Điều hướng chính" className="hidden items-center gap-1 lg:flex">
@@ -165,7 +170,7 @@ export default function Header() {
       </div>
 
       {mobileOpen && (
-        <nav aria-label="Điều hướng mobile" className="border-t border-slate-100 bg-white px-5 py-3 lg:hidden">
+        <nav aria-label="Điều hướng mobile" className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-slate-100 bg-white px-4 pb-6 pt-3 shadow-xl sm:px-5 lg:hidden">
           {navigationItems.map((item) => (
             <div key={item.label} className="border-b border-slate-100 last:border-b-0">
               {item.children ? (

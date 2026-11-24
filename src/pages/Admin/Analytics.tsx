@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 import { emptyReportData, getReportData } from '../../api/reports'
 import { useAdminResource } from '../../hooks/useAdminResource'
@@ -15,14 +16,45 @@ function chartField(value: unknown, key: string): string | undefined {
 }
 export default function AdminAnalytics() {
   const currentYear = Number(new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date()))
-  const [year, setYear] = useState(currentYear), [period, setPeriod] = useState<ReportPeriod>('year')
-  return <AnalyticsContent key={year} year={year} period={period} currentYear={currentYear} onYear={setYear} onPeriod={setPeriod} />
+  const [params, setParams] = useSearchParams()
+  const requestedYear = Number(params.get('year'))
+  const year = Number.isInteger(requestedYear) && requestedYear >= 2020 && requestedYear <= currentYear ? requestedYear : currentYear
+  const requestedPeriod = params.get('period') ?? ''
+  const period = /^(m([1-9]|1[0-2])|q[1-4])$/.test(requestedPeriod) ? requestedPeriod as ReportPeriod : 'year'
+  const requestedReport = params.get('report')
+  const linkedReport = requestedReport && Object.hasOwn(reportNames, requestedReport) ? requestedReport as ReportType : null
+  const clearLinkedReport = useCallback(() => {
+    if (!linkedReport) return
+    setParams(previous => {
+      const next = new URLSearchParams(previous)
+      next.delete('report')
+      return next
+    }, { replace: true })
+  }, [linkedReport, setParams])
+  const updateRange = (field: 'year' | 'period', value: number | ReportPeriod) => {
+    setParams(previous => {
+      const next = new URLSearchParams(previous)
+      next.set(field, String(value))
+      next.delete('report')
+      return next
+    }, { replace: true })
+  }
+  return <AnalyticsContent key={year} year={year} period={period} currentYear={currentYear}
+    linkedReport={linkedReport} onCloseLinkedReport={clearLinkedReport}
+    onYear={value => updateRange('year', value)} onPeriod={value => updateRange('period', value)} />
 }
-function AnalyticsContent({ year, period, currentYear, onYear, onPeriod }: { year: number; period: ReportPeriod; currentYear: number; onYear: (year: number) => void; onPeriod: (period: ReportPeriod) => void }) {
+function AnalyticsContent({ year, period, currentYear, linkedReport, onCloseLinkedReport, onYear, onPeriod }: {
+  year: number; period: ReportPeriod; currentYear: number; linkedReport: ReportType | null; onCloseLinkedReport: () => void;
+  onYear: (year: number) => void; onPeriod: (period: ReportPeriod) => void
+}) {
   const loader = useCallback(() => getReportData(year), [year])
   const resource = useAdminResource(loader, emptyReportData)
-  const [selection, setSelection] = useState<ReportSelection | null>(null), [exportType, setExportType] = useState<ReportType>('cashflow')
-  const close = useCallback(() => setSelection(null), [])
+  const [localSelection, setSelection] = useState<ReportSelection | null>(null), [exportType, setExportType] = useState<ReportType>('cashflow')
+  const selection = linkedReport ? { type: linkedReport } : localSelection
+  const close = useCallback(() => {
+    setSelection(null)
+    onCloseLinkedReport()
+  }, [onCloseLinkedReport])
   const snapshot = reportSnapshot(resource.data, year, period)
   const ready = !resource.loading && !resource.error && !!resource.data.capturedAt
   const open = (type: ReportType, extra: Omit<ReportSelection, 'type'> = {}) => { if (ready) setSelection({ type, ...extra }) }
@@ -35,7 +67,7 @@ function AnalyticsContent({ year, period, currentYear, onYear, onPeriod }: { yea
   const sectionTitle = (title: string, subtitle: string, type: ReportType) => <button type="button" disabled={!ready} onClick={() => open(type)} className="flex w-full flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4 text-left disabled:opacity-50"><span><span className="block text-sm font-bold text-slate-900">{title}</span><span className="mt-1 block text-xs leading-5 text-slate-500">{subtitle}</span></span><span className="whitespace-nowrap text-xs font-semibold text-emerald-700">Xem chi tiết ↗</span></button>
   const report = selection && ready ? buildReport(resource.data, year, period, selection) : null
   return <div className="space-y-7">
-    <header className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Hiệu quả vận hành & dòng tiền</p><h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">Thống kê & Báo cáo</h1><p className="mt-2 text-sm text-slate-500">Bấm vào thẻ, điểm dữ liệu hoặc nhóm trong biểu đồ để xem và xuất báo cáo riêng.</p></div><div className="flex flex-wrap gap-2"><select aria-label="Năm báo cáo" value={year} onChange={event => onYear(Number(event.target.value))} className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm">{Array.from({ length: currentYear - 2019 }, (_, index) => currentYear - index).map(value => <option key={value} value={value}>Năm {value}</option>)}</select><select aria-label="Kỳ báo cáo" value={period} onChange={event => { close(); onPeriod(event.target.value as ReportPeriod) }} className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"><option value="year">Cả năm</option><optgroup label="Theo tháng">{Array.from({ length: 12 }, (_, index) => index + 1).map(month => <option key={month} value={`m${month}`}>Tháng {month}</option>)}</optgroup><optgroup label="Theo quý">{[1, 2, 3, 4].map(quarter => <option key={quarter} value={`q${quarter}`}>Quý {quarter}</option>)}</optgroup></select><button type="button" disabled={resource.loading} onClick={resource.retry} className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold disabled:opacity-40">↻ Cập nhật</button></div></header>
+    <header className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Hiệu quả vận hành & dòng tiền</p><h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">Thống kê & Báo cáo</h1><p className="mt-2 text-sm text-slate-500">Bấm vào thẻ, điểm dữ liệu hoặc nhóm trong biểu đồ để xem và xuất báo cáo riêng.</p></div><div className="flex flex-wrap gap-2"><select aria-label="Năm báo cáo" value={year} onChange={event => onYear(Number(event.target.value))} className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm">{Array.from({ length: currentYear - 2019 }, (_, index) => currentYear - index).map(value => <option key={value} value={value}>Năm {value}</option>)}</select><select aria-label="Kỳ báo cáo" value={period} onChange={event => { setSelection(null); onPeriod(event.target.value as ReportPeriod) }} className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm"><option value="year">Cả năm</option><optgroup label="Theo tháng">{Array.from({ length: 12 }, (_, index) => index + 1).map(month => <option key={month} value={`m${month}`}>Tháng {month}</option>)}</optgroup><optgroup label="Theo quý">{[1, 2, 3, 4].map(quarter => <option key={quarter} value={`q${quarter}`}>Quý {quarter}</option>)}</optgroup></select><button type="button" disabled={resource.loading} onClick={resource.retry} className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold disabled:opacity-40">↻ Cập nhật</button></div></header>
     {resource.loading && <p role="status" className="text-sm text-slate-500">Đang tải báo cáo từ hệ thống…</p>}{resource.error && <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{resource.error} <button className="font-semibold underline" onClick={resource.retry}>Thử lại</button></p>}
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{kpis.map(kpi => <button key={kpi.id} type="button" disabled={!ready} onClick={() => open(kpi.id)} className="flex min-h-48 flex-col items-center justify-center gap-4 rounded-xl border border-slate-200 bg-white px-5 py-7 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-emerald-600 disabled:opacity-50"><p className="text-sm font-semibold leading-6 text-slate-500">{kpi.title}</p><p className="w-full break-words text-3xl font-bold leading-tight tracking-tight text-slate-950 tabular-nums 2xl:text-4xl">{ready ? kpi.value : '—'}</p><p className="text-sm leading-6 text-slate-400">{kpi.note}</p></button>)}</section>
     <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">{sectionTitle('Dòng tiền thu - chi theo tháng', 'Bấm vào tháng để xem giao dịch đã xác nhận. Đơn vị: VND.', 'cashflow')}<div className="h-80"><ResponsiveContainer width="100%" height="100%"><AreaChart data={snapshot.monthly} onClick={event => { const month = Number(chartField(event, 'activeLabel')?.replace('T', '')); open('cashflow', month >= 1 && month <= 12 ? { month } : {}) }} margin={{ top: 10, right: 15, left: 15, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" /><XAxis dataKey="month" fontSize={12} tickLine={false} /><YAxis fontSize={11} tickLine={false} tickFormatter={value => `${Number(value) / 1000000}tr`} /><Tooltip formatter={value => formatReportValue(Number(value || 0), 'money')} /><Legend wrapperStyle={{ fontSize: 12 }} /><Area type="monotone" dataKey="revenue" name="Thu thanh toán" stroke="#059669" fill="#d1fae5" strokeWidth={2} /><Area type="monotone" dataKey="payout" name="Chi rút tiền" stroke="#2563eb" fill="#dbeafe" strokeWidth={2} /><Area type="monotone" dataKey="refunds" name="Chi hoàn tiền" stroke="#f59e0b" fill="#fef3c7" strokeWidth={2} /></AreaChart></ResponsiveContainer></div><p className="text-xs leading-5 text-slate-400">Biến động của thanh toán dịch vụ, rút tiền và hoàn tiền; không đồng nghĩa số dư ngân hàng hoặc lợi nhuận.</p></section>

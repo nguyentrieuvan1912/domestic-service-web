@@ -92,7 +92,7 @@ function ScrollCue({
   dark?: boolean
 }) {
   return (
-    <div className="pointer-events-auto absolute bottom-4 left-1/2 z-20 -translate-x-1/2">
+    <div className="pointer-events-auto absolute bottom-4 left-1/2 z-20 hidden -translate-x-1/2 lg:block">
       <button
         type="button"
         onClick={onNext}
@@ -149,7 +149,7 @@ function SlideSection({
   return (
     <section
       id={id}
-      className={`cm-slide-stage relative isolate flex min-h-[calc(100vh-73px)] items-center overflow-hidden lg:h-[calc(100vh-73px)] ${
+      className={`cm-slide-stage relative isolate flex min-h-[calc(100svh-4rem)] items-center overflow-hidden lg:h-[calc(100vh-73px)] lg:min-h-0 ${
         active ? 'cm-slide-active' : ''
       }`}
     >
@@ -160,7 +160,7 @@ function SlideSection({
         className="cm-slide-bg pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover"
       />
       <div aria-hidden="true" className={`pointer-events-none absolute inset-0 -z-10 ${overlayClass}`} />
-      <div className="cm-slide-shell mx-auto w-full max-w-7xl px-5 pb-16 pt-10 sm:py-12 lg:px-8 lg:pb-14 lg:pt-8">
+      <div className="cm-slide-shell mx-auto w-full max-w-7xl px-4 py-12 sm:px-5 sm:py-14 lg:px-8 lg:pb-14 lg:pt-8">
         {children}
       </div>
       {nextLabel && onNext && <ScrollCue nextLabel={nextLabel} onNext={onNext} dark={darkCue} />}
@@ -168,7 +168,11 @@ function SlideSection({
   )
 }
 
-const HEADER_OFFSET = 73
+function getHeaderOffset() {
+  if (typeof document === 'undefined') return 73
+  const header = document.querySelector('header')
+  return header ? Math.round(header.getBoundingClientRect().height) : window.innerWidth < 1024 ? 64 : 73
+}
 const TRANSITION_DURATION_MS = 920
 
 function easeInOutQuart(t: number): number {
@@ -244,7 +248,7 @@ export default function Home() {
       const target = document.getElementById(id)
       if (!target) return
       setActiveSlide(id)
-      const targetY = target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET
+      const targetY = target.getBoundingClientRect().top + window.scrollY - getHeaderOffset()
       wheelLockUntilRef.current = performance.now() + TRANSITION_DURATION_MS + 120
       smoothScrollToY(targetY)
     },
@@ -254,13 +258,14 @@ export default function Home() {
   // Silky full-page wheel & keyboard slide navigation on desktop
   useEffect(() => {
     const getStopPositions = () => {
+      const headerOffset = getHeaderOffset()
       const stops: Array<{ id: string; y: number }> = []
       SLIDES.forEach((slide) => {
         const el = document.getElementById(slide.id)
         if (el) {
           stops.push({
             id: slide.id,
-            y: Math.max(0, Math.round(el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET)),
+            y: Math.max(0, Math.round(el.getBoundingClientRect().top + window.scrollY - headerOffset)),
           })
         }
       })
@@ -347,11 +352,12 @@ export default function Home() {
             bestId = entry.target.id
           }
         })
-        if (bestId && bestRatio >= 0.45) {
+        const minRatio = window.innerWidth < 1024 ? 0.15 : 0.45
+        if (bestId && bestRatio >= minRatio) {
           setActiveSlide(bestId)
         }
       },
-      { threshold: [0.45, 0.65] },
+      { threshold: [0.15, 0.3, 0.45, 0.65] },
     )
     sections.forEach((section) => observer.observe(section))
     return () => observer.disconnect()
@@ -366,7 +372,7 @@ export default function Home() {
   return (
     <div className="relative bg-white">
       {/* TOP STORY PROGRESS BAR */}
-      <div aria-hidden="true" className="fixed left-0 right-0 top-[73px] z-40 h-1 bg-slate-200/40">
+      <div aria-hidden="true" className="fixed left-0 right-0 top-16 z-40 h-1 bg-slate-200/40 lg:top-[73px]">
         <div
           className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-[width] duration-500 ease-out"
           style={{ width: `${progressPercent}%` }}
@@ -442,29 +448,29 @@ export default function Home() {
             <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/95 px-4 py-2 text-sm font-bold text-emerald-700 shadow-sm">
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" /> Nền tảng chăm sóc tổ ấm thông minh
             </p>
-            <h1 className="mt-5 text-4xl font-black leading-[1.08] tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+            <h1 className="mt-4 text-3xl font-black leading-[1.1] tracking-tight text-slate-950 sm:mt-5 sm:text-5xl lg:text-6xl">
               Nhà sạch hơn,
               <br />
               <span className="text-emerald-600">sống nhẹ nhàng hơn.</span>
             </h1>
-            <p className="mt-5 max-w-lg text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
+            <p className="mt-4 max-w-lg text-sm leading-6 text-slate-700 sm:mt-5 sm:text-lg sm:leading-8">
               CleanMaster kết nối gia đình với đội ngũ nhân viên xác minh danh tính, tích hợp Trợ lý AI giọng nói 24/7, Chat/Gọi Video bảo mật và đối soát payOS minh bạch trên Mobile App.
             </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-6 flex flex-col gap-3 sm:mt-7 sm:flex-row">
               <Link
                 to="/download"
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 font-bold text-white shadow-lg shadow-emerald-600/25 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700"
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition duration-200 hover:-translate-y-0.5 hover:bg-emerald-700 sm:text-base"
               >
                 Tải ứng dụng ngay <ArrowIcon />
               </Link>
               <Link
                 to="/blog"
-                className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white/95 px-6 py-3.5 font-bold text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-500 hover:text-emerald-700"
+                className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white/95 px-6 py-3.5 text-sm font-bold text-slate-800 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-500 hover:text-emerald-700 sm:text-base"
               >
                 Đọc Blog & Mẹo hay
               </Link>
             </div>
-            <div className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-slate-700">
+            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-slate-700 sm:mt-7 sm:gap-x-6 sm:text-sm">
               <span>✓ Staff xác minh CCCD</span>
               <span>✓ AI Chat & Voice 24/7</span>
               <span>✓ Web Blog mở không cần đăng nhập</span>
@@ -472,22 +478,22 @@ export default function Home() {
           </div>
 
           <div className="cm-enter-right relative mx-auto w-full max-w-lg lg:ml-auto" style={{ transitionDelay: '120ms' }}>
-            <div className="cm-float-delayed absolute -bottom-5 -left-4 z-10 rounded-2xl border border-emerald-100 bg-white/95 p-4 shadow-xl shadow-slate-900/10 backdrop-blur sm:-left-8">
-              <p className="text-xs font-semibold text-slate-500">Khách hàng hài lòng</p>
-              <p className="mt-1 text-2xl font-black text-slate-900">
-                98% <span className="text-sm font-bold text-amber-500">★ 4.9</span>
+            <div className="cm-float-delayed absolute bottom-2 left-2 z-10 rounded-2xl border border-emerald-100 bg-white/95 px-3.5 py-2.5 shadow-xl shadow-slate-900/10 backdrop-blur sm:-bottom-5 sm:-left-8 sm:p-4">
+              <p className="text-[11px] font-semibold text-slate-500 sm:text-xs">Khách hàng hài lòng</p>
+              <p className="mt-0.5 text-xl font-black text-slate-900 sm:mt-1 sm:text-2xl">
+                98% <span className="text-xs font-bold text-amber-500 sm:text-sm">★ 4.9</span>
               </p>
             </div>
-            <div className="overflow-hidden rounded-[2rem] rounded-bl-[5rem] border-8 border-white shadow-2xl shadow-emerald-950/15">
+            <div className="overflow-hidden rounded-3xl rounded-bl-[3.5rem] border-4 border-white shadow-2xl shadow-emerald-950/15 sm:rounded-[2rem] sm:rounded-bl-[5rem] sm:border-8">
               <img
                 src={SLIDE_BG.hero}
                 alt="Không gian bếp sạch sẽ và sáng thoáng"
                 className="aspect-[4/3.4] w-full object-cover transition duration-700 hover:scale-105"
               />
             </div>
-            <div className="cm-float-slow absolute -right-2 -top-5 rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-xl sm:-right-5">
-              <p className="text-xs text-emerald-300">Trợ lý AI & Điều phối</p>
-              <p className="mt-1 font-bold">Đúng người, đúng khu vực</p>
+            <div className="cm-float-slow absolute right-2 top-2 rounded-2xl bg-slate-950/95 px-3.5 py-2.5 text-white shadow-xl sm:-right-5 sm:-top-5 sm:px-4 sm:py-3">
+              <p className="text-[11px] text-emerald-300 sm:text-xs">Trợ lý AI & Điều phối</p>
+              <p className="mt-0.5 text-xs font-bold sm:mt-1 sm:text-sm">Đúng người, đúng khu vực</p>
             </div>
           </div>
         </div>

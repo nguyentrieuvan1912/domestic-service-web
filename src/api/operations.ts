@@ -15,7 +15,7 @@ export async function adminRequest<T>(service: string, path: string, method = 'G
     ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(20000),
   }).catch(() => { throw new Error('Không kết nối được hệ thống. Vui lòng thử lại.') })
   if (!response.ok) {
-    if (response.status === 401) saveSession('ADMIN', null)
+    if (response.status === 401 && readSession('ADMIN')?.accessToken === session.accessToken) saveSession('ADMIN', null)
     const problem = await response.json().catch(() => null)
     throw new Error(problem?.detail || 'Chưa xử lý được yêu cầu.')
   }

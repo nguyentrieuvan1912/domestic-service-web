@@ -1,4 +1,5 @@
 import AdminAvatar from '../components/admin/AdminAvatar'
+import BrandLogo from '../components/common/BrandLogo'
 import { AdminInboxContext } from '../components/admin/AdminInboxContext'
 import AdminInbox, { InboxBell } from '../components/admin/AdminInbox'
 import { useAdminInbox } from '../hooks/useAdminInbox'
@@ -40,6 +41,14 @@ const menuIcons = [
 
 function MenuDots() {
   return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+}
+
+function HamburgerIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+}
+
+function CloseIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
 }
 
 export default function AdminLayout() {
@@ -90,6 +99,7 @@ export default function AdminLayout() {
     return () => { observer.disconnect(); cancelAnimationFrame(frame) }
   }, [location.pathname, location.hash])
   const { logout } = useAdminAuth()
+  const activeMenuTitle = menuItems.find(item => location.pathname.startsWith(item.path))?.label || 'Cổng quản trị'
 
   const handleLogout = async () => {
     try { await logout() } catch { /* Browser session is cleared even when the server is unavailable. */ }
@@ -101,13 +111,13 @@ export default function AdminLayout() {
       {drawerOpen && <button type="button" tabIndex={-1} aria-label="Đóng menu quản trị" onClick={() => { setDrawerRoute(null); menuButtonRef.current?.focus() }} className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-sm md:hidden" />}
       <aside ref={sidebarRef} id="admin-navigation" aria-label="Menu quản trị" className={`fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-slate-800 bg-slate-950 text-slate-300 transition-[width,transform] duration-200 motion-reduce:transition-none md:visible md:static md:translate-x-0 ${drawerOpen ? 'visible translate-x-0' : 'invisible -translate-x-full'} ${collapsed ? 'md:w-20' : 'md:w-64'}`}>
         <div className={`flex min-h-20 items-center gap-3 border-b border-slate-800 px-4 py-4 ${collapsed ? 'md:justify-center md:px-2' : ''}`}>
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400 font-bold text-slate-950 ${collapsed ? 'md:hidden' : ''}`}>C</div>
+          <BrandLogo className={collapsed ? 'md:hidden' : ''} />
           <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
             <p className="font-semibold tracking-wide text-white">CleanMaster</p>
             <p className="text-xs text-slate-500">Trung tâm quản trị</p>
           </div>
           <button type="button" onClick={toggleSidebar} aria-controls="admin-navigation" aria-expanded={!collapsed} aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'} title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white focus-visible:outline-2 focus-visible:outline-emerald-400 md:inline-flex"><MenuDots /></button>
-          <button type="button" onClick={() => { setDrawerRoute(null); menuButtonRef.current?.focus() }} aria-label="Đóng menu" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg hover:bg-slate-800 md:hidden"><MenuDots /></button>
+          <button type="button" onClick={() => { setDrawerRoute(null); menuButtonRef.current?.focus() }} aria-label="Đóng menu" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white md:hidden"><CloseIcon /></button>
         </div>
 
         <nav className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overflow-x-hidden p-3" aria-label="Điều hướng quản trị">
@@ -132,28 +142,29 @@ export default function AdminLayout() {
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex min-h-20 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3.5 lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <button ref={menuButtonRef} type="button" onClick={() => setDrawerRoute(location.key)} aria-label="Mở menu quản trị" aria-controls="admin-navigation" aria-expanded={drawerOpen} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 md:hidden"><MenuDots /></button>
+        <header className="flex min-h-16 shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 py-2.5 sm:min-h-20 sm:gap-3 sm:px-4 sm:py-3.5 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <button ref={menuButtonRef} type="button" onClick={() => setDrawerRoute(location.key)} aria-label="Mở menu quản trị" aria-controls="admin-navigation" aria-expanded={drawerOpen} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 md:hidden"><HamburgerIcon /></button>
             <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Cổng quản trị</p>
-            <p className="mt-0.5 hidden text-xs font-medium text-slate-500 sm:block">Quản trị nền tảng dịch vụ gia đình CleanMaster</p>
+              <p className="truncate text-xs font-semibold uppercase tracking-wider text-emerald-600">Cổng quản trị</p>
+              <p className="truncate text-sm font-bold text-slate-900 sm:hidden">{activeMenuTitle}</p>
+              <p className="mt-0.5 hidden text-xs font-medium text-slate-500 sm:block">Quản trị nền tảng dịch vụ gia đình CleanMaster</p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
             <InboxBell unread={inbox.snapshot.unread} open={inbox.openInbox} />
             <AdminAvatar />
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 sm:px-3.5"
             >
               Đăng xuất
             </button>
           </div>
         </header>
-        {(inbox.error || inbox.snapshot.unavailableSources.length > 0) && <div role="status" className="border-b border-amber-200 bg-amber-50 px-6 py-2 text-xs text-amber-900">Một số thông báo chưa cập nhật; số đếm đang giữ theo lần đồng bộ gần nhất. <button type="button" onClick={inbox.refresh} className="font-semibold underline">Thử lại</button></div>}
-        <main className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        {(inbox.error || inbox.snapshot.unavailableSources.length > 0) && <div role="status" className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 sm:px-6">Một số thông báo chưa cập nhật; số đếm đang giữ theo lần đồng bộ gần nhất. <button type="button" onClick={inbox.refresh} className="font-semibold underline">Thử lại</button></div>}
+        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

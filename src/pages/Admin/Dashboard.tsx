@@ -16,7 +16,8 @@ const bookingStatusStyles: Record<string, string> = {
 export default function AdminDashboard() {
   const resource = useAdminResource(loadDashboard, emptyOverview)
   const data = resource.data
-  const kpis = overviewKpis(data, [new Date().getMonth() + 1])
+  const month = new Date().getMonth() + 1
+  const kpis = overviewKpis(data, [month])
   const recentBookings = data.bookings.slice(0, 5).map(b => ({ id: b.id, customerName: b.customerName, serviceName: b.serviceName, amount: b.totalAmount, status: b.status, statusLabel: b.status, time: b.createdAt }))
   const topStaff = [...data.staff].sort((a,b) => b.completedBookings - a.completedBookings).slice(0,5).map(s => ({ id: s.id, name: s.fullName, phone: s.phone, specialty: s.rank, rating: s.averageRating, totalTrips: s.completedBookings, rank: s.rank }))
   const handleExportReport = () => {
@@ -56,9 +57,10 @@ export default function AdminDashboard() {
       {/* 2. KPI Cards Grid (4 columns) */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi) => (
-          <article
+          <RouterLink
             key={kpi.id}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
+            to={`/admin/analytics?year=${overviewYear}&period=m${month}&report=${kpi.id === 'complete' ? 'completion' : kpi.id}`}
+            className="block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-emerald-600"
           >
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               {kpi.title}
@@ -76,7 +78,7 @@ export default function AdminDashboard() {
               </span>
               <span className="text-slate-400 font-medium">{kpi.subtext}</span>
             </div>
-          </article>
+          </RouterLink>
         ))}
       </section>
 

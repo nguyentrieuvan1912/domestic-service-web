@@ -75,16 +75,16 @@ export default function Blog() {
 
   return (
     <div className="bg-slate-50">
-      <section className="relative overflow-hidden bg-[#f3faf7] px-5 py-16 sm:py-20 lg:px-8">
+      <section className="relative overflow-hidden bg-[#f3faf7] px-4 py-12 sm:px-5 sm:py-20 lg:px-8">
         <div className="cm-blob-drift pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-emerald-200/45 blur-3xl" />
         <div className="relative mx-auto max-w-7xl">
           <p className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700 shadow-sm">
             Blog & Cẩm nang CleanMaster
           </p>
-          <h1 className="cm-fade-up mt-5 max-w-3xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl">
+          <h1 className="cm-fade-up mt-4 max-w-3xl text-3xl font-black tracking-tight text-slate-950 sm:mt-5 sm:text-5xl">
             Cảm hứng cho một tổ ấm nhẹ nhàng hơn.
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:mt-5 sm:text-lg sm:leading-8">
             Mẹo dọn dẹp thực tế, kiến thức chăm sóc gia đình và cập nhật tính năng mới từ hệ sinh thái ứng dụng CleanMaster — mở đọc tự do không cần đăng nhập.
           </p>
 

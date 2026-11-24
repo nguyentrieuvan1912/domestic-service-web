@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import BrandLogo from '../../components/common/BrandLogo'
 import { useAdminAuth } from '../../hooks/useAdminAuth'
 
 export default function AdminLogin() {
@@ -21,6 +22,7 @@ export default function AdminLogin() {
     setError(''); setBusy(true)
     try {
       await login(email, password)
+      setPassword('')
       navigate('/admin/dashboard', { replace: true })
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Đăng nhập thất bại.') }
     finally { setBusy(false) }
@@ -30,7 +32,10 @@ export default function AdminLogin() {
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12">
       <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
         <div className="mb-8">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-emerald-600">CleanMaster</p>
+          <div className="mb-3 flex items-center gap-3">
+            <BrandLogo />
+            <p className="text-sm font-semibold uppercase tracking-widest text-emerald-600">CleanMaster</p>
+          </div>
           <h1 className="text-3xl font-bold text-slate-950">Đăng nhập quản trị</h1>
           <p className="mt-2 text-sm text-slate-500">Truy cập trung tâm điều hành đa dịch vụ gia đình.</p>
         </div>
@@ -42,7 +47,6 @@ export default function AdminLogin() {
               type="text"
               autoComplete="username"
               required
-              placeholder="admin"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
@@ -54,7 +58,6 @@ export default function AdminLogin() {
               type="password"
               autoComplete="current-password"
               required
-              placeholder="admin123"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="mt-2 w-full rounded-lg border border-slate-200 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"

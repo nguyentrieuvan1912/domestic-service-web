@@ -103,9 +103,9 @@ export default function AdminCandidates() {
     return () => controller.abort()
   }, [catalogAttempt])
 
-  const createStaffAccount = async (password: string, rank: string, avatar: string) => {
+  const createStaffAccount = async (rank: string, avatar: string) => {
     if (!selectedCandidate) return
-    const saved = await provisionStaff(selectedCandidate.id, password, rank, avatar)
+    const saved = await provisionStaff(selectedCandidate.id, rank, avatar)
     setCandidates((current) => current.map((item) => (item.id === saved.id ? saved : item)))
     setSelectedCandidate(saved)
   }

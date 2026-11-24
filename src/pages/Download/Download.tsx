@@ -1,22 +1,49 @@
+import { useEffect, useState } from 'react'
+import QRCode from 'qrcode'
 import { Link } from 'react-router-dom'
+import appStoreLogo from '../../assets/app-store.png'
+import googlePlayLogo from '../../assets/google-play.svg'
 import Reveal from '../../components/common/Reveal'
 
-function QRCard({ platform, caption }: { platform: string; caption: string }) {
+const apkFilename = 'CleanMaster-demo-android-20261124.apk'
+const apkUrl = `https://cleanmaster.site/downloads/${apkFilename}`
+const cardClassName = 'rounded-2xl border border-emerald-100 bg-white p-3 text-center shadow-sm sm:p-4'
+
+function StoreCard({ platform, logo }: { platform: string; logo: string }) {
   return (
-    <div className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
-      <div className="grid aspect-square w-full place-items-center rounded-xl bg-slate-950 p-3.5">
-        <div className="grid h-full w-full grid-cols-7 grid-rows-7 gap-1 opacity-95">
-          {Array.from({ length: 49 }, (_, index) => {
-            const row = Math.floor(index / 7)
-            const col = index % 7
-            const isCorner = (row < 2 && col < 2) || (row < 2 && col > 4) || (row > 4 && col < 2)
-            const filled = isCorner || (index * 13 + row * 5 + col) % 3 === 0
-            return <span key={index} className={`rounded-[2px] ${filled ? 'bg-white' : 'bg-slate-800'}`} />
-          })}
-        </div>
+    <div className={cardClassName}>
+      <div className="grid aspect-square w-full place-items-center rounded-xl bg-slate-50">
+        <img src={logo} alt="" width={80} height={80} className="h-auto w-3/5 max-w-20" />
       </div>
-      <p className="mt-3 text-center text-sm font-black text-slate-900">{platform}</p>
-      <p className="mt-1 text-center text-xs text-slate-500">{caption}</p>
+      <p className="mt-3 text-sm font-black text-slate-900">{platform}</p>
+      <p className="mt-1 text-xs font-medium text-slate-600">Đang phát triển</p>
+    </div>
+  )
+}
+
+function ApkCard() {
+  const [qrCode, setQrCode] = useState('')
+
+  useEffect(() => {
+    let active = true
+    void QRCode.toDataURL(apkUrl, { width: 288, margin: 4 }).then((image) => {
+      if (active) setQrCode(image)
+    }, () => {})
+    return () => { active = false }
+  }, [])
+
+  return (
+    <div className={`${cardClassName} col-span-2 grid grid-cols-2 items-center gap-3 border-emerald-200 sm:col-span-1 sm:flex sm:flex-col sm:gap-0`}>
+      <div className="mx-auto aspect-square w-full max-w-40 rounded-xl border border-slate-100 bg-white sm:max-w-none">
+        {qrCode && <img src={qrCode} alt="Quét mã QR để tải bản cài CleanMaster cho Android" width={288} height={288} className="h-full w-full rounded-xl" />}
+      </div>
+      <div className="min-w-0 sm:mt-3 sm:w-full">
+        <p className="text-sm font-black text-slate-900">Bản cài APK</p>
+        <p className="mt-1 text-xs text-slate-600">Dành cho Android</p>
+        <a href={apkUrl} download={apkFilename} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-emerald-700 px-3 py-2 text-sm font-bold text-white transition hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
+          Tải APK
+        </a>
+      </div>
     </div>
   )
 }
@@ -57,9 +84,10 @@ export default function Download() {
             ))}
           </ul>
 
-          <div className="mt-8 grid max-w-sm grid-cols-2 gap-4">
-            <QRCard platform="App Store" caption="Dành cho iOS" />
-            <QRCard platform="Google Play" caption="Dành cho Android" />
+          <div className="mt-8 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+            <StoreCard platform="App Store" logo={appStoreLogo} />
+            <StoreCard platform="Google Play" logo={googlePlayLogo} />
+            <ApkCard />
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
