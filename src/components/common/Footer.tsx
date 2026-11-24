@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import BrandLogo from './BrandLogo'
 
 const serviceLinks = [
   { label: 'Dọn dẹp theo ca', to: '/services/one-off' },
@@ -18,16 +19,16 @@ const supportLinks = [
 export default function Footer() {
   return (
     <footer className="bg-slate-950 text-slate-300 [scroll-snap-align:end]">
-      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:gap-10 sm:px-5 sm:py-14 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:px-8">
         <div>
           <Link to="/" className="inline-flex items-center gap-3 text-white" aria-label="CleanMaster - Trang chủ">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-lg font-black">C</span>
+            <BrandLogo />
             <span className="text-xl font-extrabold tracking-tight">CleanMaster</span>
           </Link>
-          <p className="mt-5 max-w-xs text-sm leading-6 text-slate-400">
+          <p className="mt-4 max-w-xs text-sm leading-6 text-slate-400 sm:mt-5">
             Nền tảng kết nối gia đình với đội ngũ giúp việc được tuyển chọn, minh bạch và tận tâm.
           </p>
-          <div className="mt-6 flex gap-3" aria-label="Mạng xã hội">
+          <div className="mt-5 flex flex-wrap gap-2.5 sm:mt-6 sm:gap-3" aria-label="Mạng xã hội">
             {['Facebook', 'TikTok', 'Zalo'].map((social) => (
               <a key={social} href="#social" className="rounded-full border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:border-emerald-400 hover:text-emerald-300">
                 {social}

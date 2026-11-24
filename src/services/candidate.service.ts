@@ -85,7 +85,7 @@ export const submitApplication = async (
 
     return {
       success: true,
-      message: 'Đăng ký thành công! CleanMaster sẽ liên hệ với bạn trong vòng 24h để hẹn lịch phỏng vấn.',
+      message: 'Đăng ký thành công! CleanMaster sẽ liên hệ với bạn trong vòng 24h để hẹn lịch phỏng vấn. Nếu hồ sơ được duyệt và cấp tài khoản, thông tin đăng nhập sẽ được gửi đến email bạn đã đăng ký.',
       data: response ? candidateView(response) : undefined,
     }
   } catch (error) {
@@ -141,13 +141,12 @@ export const advanceCandidate = async (candidate: Candidate): Promise<Candidate>
  */
 export const provisionStaff = async (
   id: string,
-  password: string,
   rank: string,
   avatar: string
 ): Promise<Candidate> => {
   const result = await http.post<CandidateBackendResponse>(
     `/identity/admin/candidates/${id}/staff-account`,
-    { password, rank, avatar }
+    { rank, avatar }
   )
   window.dispatchEvent(new Event('admin-data-changed'))
   return candidateView(result)

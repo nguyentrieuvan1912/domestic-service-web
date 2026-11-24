@@ -82,18 +82,18 @@ export default function Services() {
 
   return (
     <div className="bg-slate-50">
-      <section className="bg-[#f3faf7] px-5 py-16 sm:py-20 lg:px-8">
+      <section className="bg-[#f3faf7] px-4 py-12 sm:px-5 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Dịch vụ CleanMaster</p>
-          <div className="mt-4 grid gap-7 lg:grid-cols-[1fr_0.75fr] lg:items-end">
-            <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">Chọn dịch vụ phù hợp với nhịp sống của gia đình.</h1>
-            <p className="max-w-lg leading-7 text-slate-600">Từ dọn dẹp theo ca đến tổng vệ sinh, mỗi gói được thiết kế để không gian của bạn luôn sạch sẽ và dễ chịu.</p>
+          <div className="mt-4 grid gap-5 lg:grid-cols-[1fr_0.75fr] lg:items-end lg:gap-7">
+            <h1 className="max-w-3xl text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-5xl">Chọn dịch vụ phù hợp với nhịp sống của gia đình.</h1>
+            <p className="max-w-lg text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">Từ dọn dẹp theo ca đến tổng vệ sinh, mỗi gói được thiết kế để không gian của bạn luôn sạch sẽ và dễ chịu.</p>
           </div>
         </div>
       </section>
 
-      <main className="mx-auto max-w-7xl px-5 py-14 sm:py-20 lg:px-8">
-        <div className="grid gap-7 lg:grid-cols-3">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-5 sm:py-20 lg:px-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-7">
           {(result.loading || result.error) && <CatalogState loading={result.loading} error={result.error} onRetry={result.retry} />}
           {servicePackages.map((service) => <ServiceCard key={service.id} service={service} onBook={() => setIsModalOpen(true)} />)}
         </div>

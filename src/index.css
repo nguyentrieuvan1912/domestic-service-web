@@ -8,6 +8,8 @@ html,
 body {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  overflow-x: clip;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html::-webkit-scrollbar,
@@ -124,13 +126,34 @@ body {
 .cm-chevron-1 { animation: cmChevronPulse 1.8s ease-in-out infinite; }
 .cm-chevron-2 { animation: cmChevronPulse 1.8s ease-in-out 0.25s infinite; }
 
+@media (max-width: 1023px) {
+  .cm-slide-stage {
+    perspective: none;
+  }
+  .cm-slide-shell,
+  .cm-enter-left,
+  .cm-enter-right,
+  .cm-enter-zoom {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .cm-slide-bg {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cm-float-slow, .cm-float-delayed, .cm-fade-up, .cm-blob-drift, .cm-wheel-dot, .cm-chevron-1, .cm-chevron-2 { animation: none !important; }
   .cm-reveal, .cm-slide-shell, .cm-enter-left, .cm-enter-right, .cm-enter-zoom { opacity: 1 !important; transform: none !important; transition: none !important; }
   .cm-slide-bg { transform: none !important; transition: none !important; }
 }
 
-.article-content { color: #334155; font-size: 17px; line-height: 1.85; overflow-wrap: anywhere; }
+.article-content { color: #334155; font-size: 15.5px; line-height: 1.78; overflow-wrap: anywhere; }
+@media (min-width: 640px) {
+  .article-content { font-size: 17px; line-height: 1.85; }
+}
 .article-content p { margin: 0 0 1.2em; }
 .article-content h1, .article-content h2, .article-content h3 { color: #0f172a; font-weight: 800; line-height: 1.35; margin: 1.7em 0 .7em; letter-spacing: -.025em; }
 .article-content h1 { font-size: 2em; }

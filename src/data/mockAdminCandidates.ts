@@ -6,6 +6,7 @@ export type CandidateSource = 'Website CleanMaster' | 'Website' | 'Facebook' | '
 
 export interface Candidate {
   staffId?: string
+  credentialsEmailSent?: boolean
   id: string
   fullName: string
   phone: string

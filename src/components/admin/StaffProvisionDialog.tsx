@@ -13,10 +13,10 @@ export default function StaffProvisionDialog({ close, saved }: { close: () => vo
   }
   return <div className="fixed inset-0 z-50 bg-slate-950/40 flex items-center justify-center p-4"><form className="bg-white rounded-xl p-6 max-w-lg w-full space-y-3 max-h-[90vh] overflow-y-auto" onSubmit={submit}>
     <h2 className="font-bold text-xl">Cấp tài khoản sau tuyển dụng trực tiếp</h2>
-    <p className="text-sm text-slate-500">Tài khoản Staff được lưu trên hệ thống. Kỹ năng được Admin xác nhận trong hồ sơ sau khi cấp.</p>
+    <p className="text-sm text-slate-500">Hệ thống gửi thông tin đăng nhập đến email của nhân viên. Kỹ năng được Admin xác nhận trong hồ sơ sau khi cấp.</p>
     {error && <p role="alert" className="text-red-600">{error}</p>}
     <AvatarPicker value={avatar} onChange={setAvatar} disabled={busy} staff />
-    {[['fullName','Họ tên','text'],['phone','Số điện thoại','tel'],['email','Email','email'],['identityCard','CCCD','text'],['dateOfBirth','Ngày sinh','date'],['password','Mật khẩu ban đầu (tối thiểu 8 ký tự)','password']].map(([name,label,type]) => <label className="block text-sm" key={name}>{label}<input className="border rounded p-2 w-full" name={name} type={type} required minLength={name==='password'?8:undefined} maxLength={name==='password'?72:160} autoComplete="off" /></label>)}
+    {[['fullName','Họ tên','text'],['phone','Số điện thoại','tel'],['email','Email','email'],['identityCard','CCCD','text'],['dateOfBirth','Ngày sinh','date']].map(([name,label,type]) => <label className="block text-sm" key={name}>{label}<input className="border rounded p-2 w-full" name={name} type={type} required maxLength={name==='email'?254:name==='identityCard'?30:160} autoComplete="off" /></label>)}
     <label className="block text-sm">Giới tính<select name="gender" className="border rounded p-2 w-full"><option value="FEMALE">Nữ</option><option value="MALE">Nam</option><option value="OTHER">Khác</option></select></label>
     <label className="block text-sm">Số năm kinh nghiệm<input name="experienceYears" type="number" min="0" max="80" step="0.5" defaultValue="0" className="border rounded p-2 w-full"/></label>
     <label className="block text-sm">Giới thiệu<textarea name="bio" maxLength={2000} className="border rounded p-2 w-full"/></label>

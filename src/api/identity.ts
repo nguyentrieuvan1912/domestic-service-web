@@ -29,14 +29,14 @@ export async function identityRequest<T>(path: string, options: RequestInit = {}
   } catch { throw new Error('Không thể kết nối backend. Vui lòng thử lại.') }
   if (!response.ok) {
     const problem = await response.json().catch(() => null) as { detail?: string; errors?: Record<string, string> } | null
-    if (response.status === 401 && role) saveSession(role, null)
+    if (response.status === 401 && role && session && readSession(role)?.accessToken === session.accessToken) saveSession(role, null)
     throw new Error(problem?.errors ? `Thông tin không hợp lệ: ${Object.keys(problem.errors).join(', ')}` : problem?.detail || 'Không thể xử lý yêu cầu. Vui lòng thử lại.')
   }
   if (role === 'ADMIN' && options.method && options.method !== 'GET') window.dispatchEvent(new Event('admin-data-changed'))
   return response.status === 204 ? undefined as T : response.json() as Promise<T>
 }
 export async function loginAccount(identifier: string, password: string, role: AccountRole) {
-  const session = await identityRequest<AccountSession>('/auth/login', { method: 'POST', body: JSON.stringify({ identifier, password }) })
+  const session = await identityRequest<AccountSession>('/auth/login', { method: 'POST', body: JSON.stringify({ identifier, password, role }) })
   if (session.user.role !== role) {
     await identityRequest('/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${session.accessToken}` } })
     throw new Error(role === 'ADMIN' ? 'Tài khoản này không có quyền quản trị.' : 'Vui lòng sử dụng tài khoản khách hàng.')
@@ -58,7 +58,7 @@ const candidateView = (value: CandidateResponse): Candidate => ({ ...value, id: 
 export const getCandidates = async () => (await identityRequest<CandidateResponse[]>('/admin/candidates', {}, 'ADMIN')).map(candidateView)
 export const createCandidate = async (candidate: Candidate) => candidateView(await identityRequest<CandidateResponse>('/admin/candidates', { method: 'POST', body: JSON.stringify(candidate) }, 'ADMIN'))
 export const advanceCandidate = async (candidate: Candidate) => candidateView(await identityRequest<CandidateResponse>(`/admin/candidates/${candidate.id}`, { method: 'PATCH', body: JSON.stringify(candidate) }, 'ADMIN'))
-export const provisionStaff = async (id: string, password: string, rank: string, avatar: string) => candidateView(await identityRequest<CandidateResponse>(`/admin/candidates/${id}/staff-account`, { method: 'POST', body: JSON.stringify({ password, rank, avatar }) }, 'ADMIN'))
+export const provisionStaff = async (id: string, rank: string, avatar: string) => candidateView(await identityRequest<CandidateResponse>(`/admin/candidates/${id}/staff-account`, { method: 'POST', body: JSON.stringify({ rank, avatar }) }, 'ADMIN'))
 export async function getStaff(): Promise<Staff[]> {
   const items = await identityRequest<(Pick<Staff, 'fullName' | 'phone' | 'identityCard' | 'rank' | 'joinDate' | 'averageRating' | 'statusNote' | 'dateOfBirth' | 'birthYear' | 'gender' | 'experienceYears' | 'bio' | 'avatar' | 'email'> & { id: number; status: string })[]>('/admin/staff', {}, 'ADMIN')
   return items.map(item => ({ ...item, id: String(item.id), identityCard: item.identityCard || '', status: item.status === 'BLOCKED' ? 'LOCKED' : item.status as Staff['status'],
